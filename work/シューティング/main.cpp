@@ -4,6 +4,7 @@
 #include<time.h>
 #include<string>
 #include "GameBase.h"
+#include "DebugRectLine.h"
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")
@@ -77,6 +78,10 @@ int gameScore;
 //出力文字.
 std::string outputString;
 
+//デバッグようライン描画.
+LPD3DXLINE  pLine;
+DebugRectLine rectLine;
+
 POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
@@ -109,11 +114,22 @@ void Render2D(void)
 	///	スプライトの描画処理
 	//////////////////////////////////////////////////
 
+	D3DXVECTOR2 vec[] = {
+		D3DXVECTOR2(300,100),
+		D3DXVECTOR2(400,100),
+	};
+	pLine->SetAntialias(TRUE);
+	pLine->SetWidth(1);
+	pLine->Begin();
+	pLine->Draw(vec, 2, D3DCOLOR_ARGB(255, 255, 0, 0));
+	pLine->End();
+	
 	// 描画開始
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
+	rectLine.Draw();
 	
-	
+	/*
 	/////  背景
 	RECT rcBack = { 0,0,1280,720 };
 	
@@ -125,6 +141,7 @@ void Render2D(void)
 
 	// 描画終了
 	lpSprite->End();
+	*/
 
 	// 文字表示
 	RECT rcScore = { 10,10,200,200 };
@@ -138,7 +155,7 @@ void Render2D(void)
 		DT_LEFT | DT_NOCLIP,					    //ここで左揃えなどを設定します。
 		D3DCOLOR_ARGB(255, 255, 255, 255));			//文字の色を決めます。
 
-	std::string cordStr("#include<stdio.h>\nmain()\n{\nprintf(""helloworld!"")\n}");
+	std::string cordStr("#include<stdio.h>\nmain()\n{\n\tprintf(""helloworld!"")\n}");
 	RECT rcCord = { 10,30,200,200 };
 	lpFont->DrawText(nullptr,                          //Spriteのポインタ NULLでもOK
 		cordStr.c_str(),										//描画する文字列のポインタを指定します。
@@ -395,6 +412,15 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 	lpFont->OnResetDevice();
 
+	//Lineさくせい
+	D3DXCreateLine(lpD3DDevice, &pLine);
+	rectLine.Initialize(lpD3DDevice);
+	const LONG rectLength = 50;
+	RECT startRect = { 300,300,350,350 };
+	for (int index = 0; index < 30; index++)
+	{
+		rectLine.AddRect({ 0 + ( rectLength * index ),600,50 + (rectLength * index),650 });
+	}
 	//Init();
 
 	while(1){
