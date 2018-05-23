@@ -80,11 +80,22 @@ std::string outputString;
 
 //デバッグようライン描画.
 LPD3DXLINE  pLine;
-DebugRectLine rectLine;
+std::vector< DebugRectLine * > rectLineList;
+DebugRectLine rectPlayer;
+RECT rectPlayerPos;
 
 POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
+
+//行列に確定させる更新処理.
+void LateUpdate()
+{
+	//rectPlayer.ReplaceRect(0, rectPlayerPos);
+	// 行列作成
+	D3DXMatrixTranslation(&backMat, 0.0f, backY, 0.0f);
+	D3DXMatrixTranslation(&backMat2, 0.0f, backY - 720, 0.0f);
+}
 
 // 更新処理
 void Update(void)
@@ -95,10 +106,10 @@ void Update(void)
 	{
 		backY -= 720;
 	}
-	// 行列作成
-	D3DXMatrixTranslation(&backMat, 0.0f, backY, 0.0f);
-	D3DXMatrixTranslation(&backMat2, 0.0f, backY-720, 0.0f);
-	
+	LateUpdate();
+
+	rectPlayerPos.top += 1;
+	rectPlayerPos.bottom += 1;
 }
 
 // 3D描画
@@ -127,7 +138,11 @@ void Render2D(void)
 	// 描画開始
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
-	rectLine.Draw();
+	for( const auto & rectLine : rectLineList )
+	{
+		rectLine->Draw();
+	}
+	rectPlayer.Draw();
 	
 	/*
 	/////  背景
@@ -414,12 +429,20 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 	//Lineさくせい
 	D3DXCreateLine(lpD3DDevice, &pLine);
-	rectLine.Initialize(lpD3DDevice);
+	rectPlayer.Initialize(lpD3DDevice);
+
 	const LONG rectLength = 50;
-	RECT startRect = { 300,300,350,350 };
+	const LONG playerX = 100;
+	const LONG playerY = 200;
+	rectPlayerPos = { playerX , playerY , playerX + rectLength , playerY + rectLength };
+	rectPlayer.SetRect(rectPlayerPos);
 	for (int index = 0; index < 30; index++)
 	{
-		rectLine.AddRect({ 0 + ( rectLength * index ),600,50 + (rectLength * index),650 });
+		DebugRectLine rectLine;
+		rectLine.Initialize(lpD3DDevice);
+		RECT startRect = { 0 + (rectLength * index),600,50 + (rectLength * index),650 };
+		rectLine.SetRect(startRect);
+		rectLineList.push_back(&rectLine);
 	}
 	//Init();
 

@@ -16,9 +16,10 @@ public:
 	bool Initialize( LPDIRECT3DDEVICE9 lpD3DDevice );
 	void Update();
 	void Draw();
-	void AddRect( const RECT aRect );
+	void SetRect( const RECT & aRect );
+	const RECT & GetRect();
 private:
 	LPD3DXLINE			mpLine;
-	std::vector<RECT>	mRectList;
+	RECT				mRect;
 };
 
