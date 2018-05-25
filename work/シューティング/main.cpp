@@ -84,6 +84,10 @@ std::vector< DebugRectLine * > rectLineList;
 DebugRectLine rectPlayer;
 RECT rectPlayerPos;
 
+const LONG groundY = 600;
+D3DXVECTOR2 playerAddPos(0,3);
+bool jumpFlg = false;
+
 POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
@@ -91,7 +95,7 @@ POINT point;
 //行列に確定させる更新処理.
 void LateUpdate()
 {
-	//rectPlayer.ReplaceRect(0, rectPlayerPos);
+	rectPlayer.SetRect(rectPlayerPos);
 	// 行列作成
 	D3DXMatrixTranslation(&backMat, 0.0f, backY, 0.0f);
 	D3DXMatrixTranslation(&backMat2, 0.0f, backY - 720, 0.0f);
@@ -106,10 +110,47 @@ void Update(void)
 	{
 		backY -= 720;
 	}
-	LateUpdate();
 
-	rectPlayerPos.top += 1;
-	rectPlayerPos.bottom += 1;
+	playerAddPos.x = 0.F;
+	
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	{
+		playerAddPos.x = 3.F;
+	}
+
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+	{
+		playerAddPos.x = -3.F;
+	}
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	{
+		jumpFlg = true;
+	}
+	else 
+	{
+		jumpFlg = false;
+	}
+
+	if (jumpFlg)
+	{
+		playerAddPos.y = -20.F;
+	}
+	playerAddPos.y += 0.9f;
+
+	rectPlayerPos.left += playerAddPos.x;
+	rectPlayerPos.right += playerAddPos.x;
+
+	if (groundY > rectPlayerPos.bottom + playerAddPos.y)
+	{
+		rectPlayerPos.top += playerAddPos.y;
+		rectPlayerPos.bottom += playerAddPos.y;
+	}
+	else
+	{
+		rectPlayerPos.top = groundY - 50;
+		rectPlayerPos.bottom = groundY;
+	}
 }
 
 // 3D描画
@@ -138,7 +179,7 @@ void Render2D(void)
 	// 描画開始
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
-	for( const auto & rectLine : rectLineList )
+	for( const auto rectLine : rectLineList )
 	{
 		rectLine->Draw();
 	}
@@ -190,7 +231,7 @@ void DrawFrame(void)
 
 	// 更新処理
 	Update();
-
+	LateUpdate();
 
 	// 描画開始
 	lpD3DDevice->BeginScene();
@@ -438,11 +479,11 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 	rectPlayer.SetRect(rectPlayerPos);
 	for (int index = 0; index < 30; index++)
 	{
-		DebugRectLine rectLine;
-		rectLine.Initialize(lpD3DDevice);
+		DebugRectLine * rectLine = new DebugRectLine();
+		rectLine->Initialize(lpD3DDevice);
 		RECT startRect = { 0 + (rectLength * index),600,50 + (rectLength * index),650 };
-		rectLine.SetRect(startRect);
-		rectLineList.push_back(&rectLine);
+		rectLine->SetRect(startRect);
+		rectLineList.push_back( rectLine );
 	}
 	//Init();
 
