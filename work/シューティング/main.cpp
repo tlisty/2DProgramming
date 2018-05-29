@@ -81,8 +81,10 @@ std::string outputString;
 //ƒfƒoƒbƒO‚æ‚¤ƒ‰ƒCƒ“•`‰æ.
 LPD3DXLINE  pLine;
 std::vector< DebugRectLine * > rectLineList;
+std::vector< std::vector< DebugRectLine* > > rectBlockList;
 DebugRectLine rectPlayer;
 RECT rectPlayerPos;
+const LONG rectLength = 50;
 
 const LONG groundY = 600;
 D3DXVECTOR2 playerAddPos(0,3);
@@ -91,6 +93,12 @@ bool jumpFlg = false;
 POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
+
+const bool isHitRect(const RECT & aRect, const RECT & bRect)
+{
+	const auto result = aRect.left < bRect.right && bRect.left < aRect.right && aRect.top < bRect.bottom && bRect.top < aRect.bottom;
+	return result;
+}
 
 //s—ñ‚ÉŠm’è‚³‚¹‚éXVˆ—.
 void LateUpdate()
@@ -123,23 +131,62 @@ void Update(void)
 		playerAddPos.x = -3.F;
 	}
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-	{
-		jumpFlg = true;
-	}
-	else 
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && jumpFlg == true)
 	{
 		jumpFlg = false;
+		playerAddPos.y = -15.F;
 	}
 
-	if (jumpFlg)
-	{
-		playerAddPos.y = -20.F;
-	}
-	playerAddPos.y += 0.9f;
+		playerAddPos.y += 0.9f;
 
 	rectPlayerPos.left += playerAddPos.x;
 	rectPlayerPos.right += playerAddPos.x;
+	rectPlayerPos.top += playerAddPos.y;
+	rectPlayerPos.bottom += playerAddPos.y;
+
+	for (const auto list : rectBlockList)
+	{
+		for (const auto block : list)
+		{
+			if (block == nullptr) { continue; }
+			const auto & blockRect = block->GetRect();
+			const auto isHit = isHitRect(rectPlayerPos, blockRect);
+			if (isHit)
+			{
+				if (playerAddPos.y < 0)
+				{
+					rectPlayerPos.bottom = blockRect.bottom + rectLength;
+					rectPlayerPos.top = blockRect.bottom;
+					playerAddPos.y = 0;
+				}
+				else
+				{
+					rectPlayerPos.bottom = blockRect.top ;
+					rectPlayerPos.top = blockRect.top - rectLength;
+					playerAddPos.y = 0;
+					jumpFlg = true;
+				}
+				
+				/*
+				if (playerAddPos.x < 0)
+				{
+					rectPlayerPos.right = blockRect.right + rectLength;
+					rectPlayerPos.left = blockRect.right;
+					playerAddPos.x = 0;
+				}
+				else
+				{
+					rectPlayerPos.right = blockRect.left;
+					rectPlayerPos.left = blockRect.left - rectLength; 
+					playerAddPos.x = 0;
+				}
+				*/
+				rectPlayer.SetRect(rectPlayerPos);
+				//playerAddPos = D3DXVECTOR2(0, 0);
+			}
+
+		}
+	}
 
 	if (groundY > rectPlayerPos.bottom + playerAddPos.y)
 	{
@@ -150,6 +197,7 @@ void Update(void)
 	{
 		rectPlayerPos.top = groundY - 50;
 		rectPlayerPos.bottom = groundY;
+		jumpFlg = true;
 	}
 }
 
@@ -179,9 +227,17 @@ void Render2D(void)
 	// •`‰æŠJŽn
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
-	for( const auto rectLine : rectLineList )
+	for( const auto & rectLine : rectLineList )
 	{
 		rectLine->Draw();
+	}
+	for( const auto rectList : rectBlockList )
+	{
+		for (const auto & rect : rectList)
+		{
+			if (rect == nullptr) { continue; }
+			rect->Draw();
+		}
 	}
 	rectPlayer.Draw();
 	
@@ -453,6 +509,28 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 
 	// ƒQ[ƒ€‚ÉŠÖ‚·‚é‰Šú‰»ˆ— ---------------------------
+	FILE * fp;
+	int data[5][5];
+	int w = 0, h = 0;
+	if ( (fp = fopen("test.txt", "r") ) != NULL)
+	{
+		char ch;
+		while((ch = fgetc(fp)) != EOF)
+		{
+			if( ch == '\n' )
+			{
+				h++;
+				w = 0;
+			}
+			else
+			{
+				data[h][w] = ch - 0x30;
+				w++;
+			}
+		}
+	}
+	fclose(fp);
+
 	// ”wŒi
 	LoadText(&backTex, "back.png", 1280, 720, NULL);	// ”wŒi
 
@@ -472,7 +550,7 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 	D3DXCreateLine(lpD3DDevice, &pLine);
 	rectPlayer.Initialize(lpD3DDevice);
 
-	const LONG rectLength = 50;
+
 	const LONG playerX = 100;
 	const LONG playerY = 200;
 	rectPlayerPos = { playerX , playerY , playerX + rectLength , playerY + rectLength };
@@ -484,6 +562,27 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 		RECT startRect = { 0 + (rectLength * index),600,50 + (rectLength * index),650 };
 		rectLine->SetRect(startRect);
 		rectLineList.push_back( rectLine );
+	}
+
+	srand(time(0));
+	for (int height = 0; height < 3; height++)
+	{
+		std::vector< DebugRectLine * > list;
+		for (int width = 0; width < 10; width++)
+		{
+			DebugRectLine * result = nullptr;
+			auto isCreate = ( (rand() % 2) == 0 );
+			if (isCreate)
+			{
+				result = new DebugRectLine();
+				result->Initialize(lpD3DDevice);
+				RECT startRect = { 200 + (rectLength * width),400 + ( rectLength * height ),250 + (rectLength * width),450 + (rectLength * height) };
+				result->SetRect(startRect);
+				list.push_back(result);
+			}
+			list.push_back(result);
+		}
+		rectBlockList.push_back(list);
 	}
 	//Init();
 
