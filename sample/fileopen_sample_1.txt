@@ -1,0 +1,28 @@
+/*
+
+ファイル入出力サンプル
+1文字づつ取得し、文字コードを10進数に変換させるコード
+
+FILE * fp;
+int data[5][5];
+int w = 0, h = 0;
+if ( (fp = fopen("test.txt", "r") ) != NULL)
+{
+	char ch;
+	while((ch = fgetc(fp)) != EOF)
+	{
+		if( ch == '\n' )
+		{
+			h++;
+			w = 0;
+		}
+		else
+		{
+			data[h][w] = ch - 0x30;
+			w++;
+		}
+	}
+}
+fclose(fp);
+
+*/

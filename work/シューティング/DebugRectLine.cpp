@@ -6,8 +6,8 @@
 #pragma comment(lib, "d3dx9.lib")
 
 DebugRectLine::DebugRectLine()
-	: mpLine( nullptr )
-	, mRectList( )
+	: mpLine(nullptr)
+	, mRect()
 {
 }
 
@@ -16,9 +16,9 @@ DebugRectLine::~DebugRectLine()
 {
 }
 
-bool DebugRectLine::Initialize( LPDIRECT3DDEVICE9 lpD3DDevice )
+bool DebugRectLine::Initialize(LPDIRECT3DDEVICE9 lpD3DDevice)
 {
-	D3DXCreateLine( lpD3DDevice , &mpLine );
+	D3DXCreateLine(lpD3DDevice, &mpLine);
 	const bool result = mpLine != nullptr;
 	return result;
 }
@@ -33,25 +33,27 @@ void DebugRectLine::Draw()
 	mpLine->SetAntialias(TRUE);
 	mpLine->SetWidth(1);
 	mpLine->Begin();
-	for ( const auto & rect : mRectList)
+	auto lineDraw = [this](const float beginX, const float beginY, const float endX, const float endY)
 	{
-		auto lineDraw = [ this ](const float beginX , const float beginY , const float endX , const float endY )
-		{
-			D3DXVECTOR2 vec[] = {
-				D3DXVECTOR2(beginX,beginY),
-				D3DXVECTOR2(endX,endY),
-			};
-			mpLine->Draw(vec, 2, D3DCOLOR_ARGB(255, 255, 0, 255));
+		D3DXVECTOR2 vec[] = {
+			D3DXVECTOR2(beginX,beginY),
+			D3DXVECTOR2(endX,endY),
 		};
-		lineDraw(rect.left , rect.top   , rect.right, rect.top);
-		lineDraw(rect.right, rect.top   , rect.right, rect.bottom);
-		lineDraw(rect.right, rect.bottom, rect.left , rect.bottom);
-		lineDraw(rect.left , rect.bottom, rect.left , rect.top);
-	}
+		mpLine->Draw(vec, 2, D3DCOLOR_ARGB(255, 255, 0, 255));
+	};
+	lineDraw(mRect.left, mRect.top, mRect.right, mRect.top);
+	lineDraw(mRect.right, mRect.top, mRect.right, mRect.bottom);
+	lineDraw(mRect.right, mRect.bottom, mRect.left, mRect.bottom);
+	lineDraw(mRect.left, mRect.bottom, mRect.left, mRect.top);
 	mpLine->End();
 }
 
-void DebugRectLine::AddRect(const RECT aRect)
+void DebugRectLine::SetRect(const RECT & aRect)
 {
-	mRectList.push_back(aRect);
+	mRect = aRect;
+}
+
+const RECT & DebugRectLine::GetRect()
+{
+	return mRect;
 }
