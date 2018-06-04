@@ -5,7 +5,6 @@
 		縦は640の12マス.
 */
 
-
 #include<windows.h>
 #include<stdio.h>
 #include<d3dx9.h>
@@ -80,10 +79,11 @@ struct tPlayerObject
 	D3DXMATRIX    mTransMatrix;
 	D3DXMATRIX    mScaleMatrix;
 	D3DXVECTOR3	  mScaleVector;
+	float		  mGravity;
 };
 
 tPlayerObject player;
-tSpriteObject mapChipList[mapChipRow][mapChipColumn];
+tChipObject mapChipList[mapChipRow][mapChipColumn];
 //std::vector<std::vector<tSpriteObject*>> mapChipList;
 
 //出力文字.
@@ -126,13 +126,50 @@ void Update(void)
 
 	if (GetAsyncKeyState(VK_UP) & 0x8000)
 	{
-		player.mSpriteObject.mPos.y -= 3.0f;
+		//player.mSpriteObject.mPos.y -= 3.0f;
+		player.mGravity = -15.f;
 	}
 
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
 	{
 		player.mSpriteObject.mPos.y += 3.0f;
 	}
+
+	player.mGravity += 0.9f;
+
+	auto nextY = player.mSpriteObject.mPos.y + player.mGravity;
+	const auto & playerPos = player.mSpriteObject.mPos;
+	for (int row = 0; row < mapChipRow; row++)
+	{
+		for (int column = 0; column < mapChipColumn; column++)
+		{
+			if (mapChipList[row][column].mType != eChipType::eWall) { continue; }
+			auto & chipPos = mapChipList[row][column].mSpriteObject.mPos;
+			//キャラのX座標がマップチップのX座標の中に入っているかチェック.
+			if (chipPos.x < playerPos.x + (mapChipWidth / 2) && chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
+			{
+				/*
+				ここら辺一体の判定が気持ち悪すぎる
+				http://monooki.ldblog.jp/archives/35959913.html
+				*/
+				//上側判定.
+				if (nextY + (mapChipWidth / 2) > chipPos.y && playerPos.y < chipPos.y )
+				{
+					player.mGravity = 0; //( nextY + (mapChipWidth / 2) ) - chipPos.y;
+					player.mSpriteObject.mPos.y = chipPos.y - (mapChipWidth / 2);
+				}
+				else if (nextY - (mapChipWidth / 2) < chipPos.y + mapChipHeight && playerPos.y > chipPos.y + mapChipHeight)
+				{
+					
+					player.mGravity = 0; //( nextY + (mapChipWidth / 2) ) - chipPos.y;
+					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipWidth / 2);
+					
+				}
+			}
+		}
+	}
+
+	player.mSpriteObject.mPos.y += player.mGravity;
 
 }
 
@@ -157,8 +194,8 @@ void Render2D(void)
 	{
 		for (int column = 0; column < mapChipColumn; column++)
 		{
-			lpSprite->SetTransform(&mapChipList[row][column].mMatrix);
-			lpSprite->Draw(mapChipList[row][column].mpTex, &mapChipList[row][column].mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+			lpSprite->SetTransform(&mapChipList[row][column].mSpriteObject.mMatrix);
+			lpSprite->Draw(mapChipList[row][column].mSpriteObject.mpTex, &mapChipList[row][column].mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
 		}
 	}
 
@@ -443,19 +480,19 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 			}
 			else
 			{
-				mapChipList[row][column].mpTex = baseChipTex;
-				mapChipList[row][column].mPos = D3DXVECTOR3( column * mapChipWidth , row * mapChipHeight , 0 );
-				D3DXMatrixTranslation(&mapChipList[row][column].mMatrix, mapChipList[row][column].mPos.x, mapChipList[row][column].mPos.y, mapChipList[row][column].mPos.z);
-				auto chipType = static_cast<eChipType>(ch - 0x30);
-				switch (chipType)
+				mapChipList[row][column].mSpriteObject.mpTex = baseChipTex;
+				mapChipList[row][column].mSpriteObject.mPos = D3DXVECTOR3( column * mapChipWidth , row * mapChipHeight , 0 );
+				D3DXMatrixTranslation(&mapChipList[row][column].mSpriteObject.mMatrix, mapChipList[row][column].mSpriteObject.mPos.x, mapChipList[row][column].mSpriteObject.mPos.y, mapChipList[row][column].mSpriteObject.mPos.z);
+				mapChipList[row][column].mType = static_cast<eChipType>(ch - 0x30);
+				switch (mapChipList[row][column].mType)
 				{
 				default:
 					break;
 				case eChipType::eSky:
-					mapChipList[row][column].mRect = skyRect;
+					mapChipList[row][column].mSpriteObject.mRect = skyRect;
 					break;
 				case eChipType::eWall:
-					mapChipList[row][column].mRect = wallRect;
+					mapChipList[row][column].mSpriteObject.mRect = wallRect;
 					break;
 				}
 				 
@@ -470,6 +507,7 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 	player.mSpriteObject.mRect = { 0 , 0 , 64 , 64 };
 	player.mSpriteObject.mpTex = baseCharaTex;
 	player.mScaleVector = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+	player.mSpriteObject.mPos = D3DXVECTOR3(100.0f,100.0f,0.0f);
 
 	srand(time(0));
 
