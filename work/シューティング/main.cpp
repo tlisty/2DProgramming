@@ -134,32 +134,64 @@ void Update(void)
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && jumpFlg == true)
 	{
 		jumpFlg = false;
-		playerAddPos.y = -15.F;
+		playerAddPos.y = -12.F;
 	}
 
+	if (jumpFlg == false)
+	{
 		playerAddPos.y += 0.9f;
-
-	rectPlayerPos.left += playerAddPos.x;
-	rectPlayerPos.right += playerAddPos.x;
-	rectPlayerPos.top += playerAddPos.y;
-	rectPlayerPos.bottom += playerAddPos.y;
-
+	}
+	else
+	{
+		playerAddPos.y = 0;
+	}
 	for (const auto list : rectBlockList)
 	{
 		for (const auto block : list)
 		{
 			if (block == nullptr) { continue; }
 			const auto & blockRect = block->GetRect();
+
+			if (rectPlayerPos.right > blockRect.left && blockRect.right > rectPlayerPos.left)
+			{
+				//è„ë§îªíË.
+				if (blockRect.bottom > rectPlayerPos.top + playerAddPos.y && rectPlayerPos.top > blockRect.top)
+				{
+					playerAddPos.y = blockRect.bottom - (rectPlayerPos.top + playerAddPos.y);
+
+				}
+				//â∫ë§îªíË.
+				if (rectPlayerPos.bottom + playerAddPos.y > blockRect.top && blockRect.bottom > rectPlayerPos.bottom)
+				{
+					playerAddPos.y = blockRect.top - rectPlayerPos.bottom;
+					jumpFlg = true;
+				}
+			}
+
+			if (rectPlayerPos.bottom > blockRect.top && blockRect.bottom > rectPlayerPos.top)
+			{
+				//ç∂ë§îªíË.
+				if (blockRect.right > rectPlayerPos.left + playerAddPos.x && rectPlayerPos.left > blockRect.left)
+				{
+					playerAddPos.x = blockRect.right - (rectPlayerPos.left + playerAddPos.x);
+				}
+				//âEë§îªíË.
+				if (rectPlayerPos.right + playerAddPos.x > blockRect.left && blockRect.right > rectPlayerPos.right)
+				{
+					playerAddPos.x = blockRect.left - (rectPlayerPos.right + playerAddPos.x);
+				}
+			}
+			/*
 			const auto isHit = isHitRect(rectPlayerPos, blockRect);
 			if (isHit)
 			{
-				if (playerAddPos.y < 0)
+				if (playerAddPos.y < 0  && rectPlayerPos.top < blockRect.bottom)
 				{
 					rectPlayerPos.bottom = blockRect.bottom + rectLength;
 					rectPlayerPos.top = blockRect.bottom;
 					playerAddPos.y = 0;
 				}
-				else
+				else if(playerAddPos.y > 0 && rectPlayerPos.bottom > blockRect.top)
 				{
 					rectPlayerPos.bottom = blockRect.top ;
 					rectPlayerPos.top = blockRect.top - rectLength;
@@ -167,26 +199,30 @@ void Update(void)
 					jumpFlg = true;
 				}
 				
-				/*
-				if (playerAddPos.x < 0)
+				
+				if (playerAddPos.x < 0 && rectPlayerPos.left < blockRect.right)
 				{
 					rectPlayerPos.right = blockRect.right + rectLength;
 					rectPlayerPos.left = blockRect.right;
 					playerAddPos.x = 0;
 				}
-				else
+				else if(playerAddPos.x > 0 && rectPlayerPos.right > blockRect.left)
 				{
 					rectPlayerPos.right = blockRect.left;
 					rectPlayerPos.left = blockRect.left - rectLength; 
 					playerAddPos.x = 0;
 				}
-				*/
 				rectPlayer.SetRect(rectPlayerPos);
 				//playerAddPos = D3DXVECTOR2(0, 0);
 			}
-
+			*/
 		}
 	}
+
+	rectPlayerPos.left += playerAddPos.x;
+	rectPlayerPos.right += playerAddPos.x;
+	rectPlayerPos.top += playerAddPos.y;
+	rectPlayerPos.bottom += playerAddPos.y;
 
 	if (groundY > rectPlayerPos.bottom + playerAddPos.y)
 	{
@@ -509,27 +545,6 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 
 	// ÉQÅ[ÉÄÇ…ä÷Ç∑ÇÈèâä˙âªèàóù ---------------------------
-	FILE * fp;
-	int data[5][5];
-	int w = 0, h = 0;
-	if ( (fp = fopen("test.txt", "r") ) != NULL)
-	{
-		char ch;
-		while((ch = fgetc(fp)) != EOF)
-		{
-			if( ch == '\n' )
-			{
-				h++;
-				w = 0;
-			}
-			else
-			{
-				data[h][w] = ch - 0x30;
-				w++;
-			}
-		}
-	}
-	fclose(fp);
 
 	// îwåi
 	LoadText(&backTex, "back.png", 1280, 720, NULL);	// îwåi
