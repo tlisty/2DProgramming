@@ -42,6 +42,7 @@ const int mapChipRow = 12;
 const int mapChipColumn = 20;
 const RECT skyRect = {0,0,64,64};
 const RECT wallRect = { 64,0,128,64 };
+const float gravity = 0.9f;
 
 ////  グローバル変数宣言
 
@@ -79,7 +80,7 @@ struct tPlayerObject
 	D3DXMATRIX    mTransMatrix;
 	D3DXMATRIX    mScaleMatrix;
 	D3DXVECTOR3	  mScaleVector;
-	float		  mGravity;
+	D3DXVECTOR3	  mAcceleVector;
 };
 
 tPlayerObject player;
@@ -112,32 +113,30 @@ void LateUpdate()
 void Update(void)
 {
 
+	player.mAcceleVector.x = 0.0f;
+
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		player.mSpriteObject.mPos.x += 3.0f;
+		player.mAcceleVector.x += 3.0f;
 		player.mScaleVector.x = 1.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 	{
-		player.mSpriteObject.mPos.x -= 3.0f;
+		player.mAcceleVector.x -= 3.0f;
 		player.mScaleVector.x = -1.0f;
 	}
 
-	if (GetAsyncKeyState(VK_UP) & 0x8000)
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
 		//player.mSpriteObject.mPos.y -= 3.0f;
-		player.mGravity = -15.f;
+		player.mAcceleVector.y = -15.f;
 	}
 
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-	{
-		player.mSpriteObject.mPos.y += 3.0f;
-	}
+	player.mAcceleVector.y += gravity;
 
-	player.mGravity += 0.9f;
-
-	auto nextY = player.mSpriteObject.mPos.y + player.mGravity;
+	const auto nextY = player.mSpriteObject.mPos.y + player.mAcceleVector.y;
+	const auto nextX = player.mSpriteObject.mPos.x + player.mAcceleVector.x;
 	const auto & playerPos = player.mSpriteObject.mPos;
 	for (int row = 0; row < mapChipRow; row++)
 	{
@@ -145,31 +144,53 @@ void Update(void)
 		{
 			if (mapChipList[row][column].mType != eChipType::eWall) { continue; }
 			auto & chipPos = mapChipList[row][column].mSpriteObject.mPos;
-			//キャラのX座標がマップチップのX座標の中に入っているかチェック.
-			if (chipPos.x < playerPos.x + (mapChipWidth / 2) && chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
+			
+			//キャラのX座標がマップチップのX座標の中に入っているかチェック通ったら上下判定に入る.
+			if (chipPos.x < playerPos.x + (mapChipWidth / 2) 
+				&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
 			{
-				/*
-				ここら辺一体の判定が気持ち悪すぎる
-				http://monooki.ldblog.jp/archives/35959913.html
-				*/
-				//上側判定.
-				if (nextY + (mapChipWidth / 2) > chipPos.y && playerPos.y < chipPos.y )
+				//上判定.
+				if (nextY + (mapChipHeight / 2) > chipPos.y 
+					&& nextY < chipPos.y )
 				{
-					player.mGravity = 0; //( nextY + (mapChipWidth / 2) ) - chipPos.y;
-					player.mSpriteObject.mPos.y = chipPos.y - (mapChipWidth / 2);
+					player.mAcceleVector.y = 0;
+					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
 				}
-				else if (nextY - (mapChipWidth / 2) < chipPos.y + mapChipHeight && playerPos.y > chipPos.y + mapChipHeight)
+				//下判定.
+				else if (nextY - (mapChipHeight / 2) < chipPos.y + mapChipHeight 
+					&& nextY > chipPos.y + mapChipHeight)
 				{
 					
-					player.mGravity = 0; //( nextY + (mapChipWidth / 2) ) - chipPos.y;
-					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipWidth / 2);
-					
+					player.mAcceleVector.y = 0; 
+					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipHeight / 2);
+				}
+			}
+
+			//キャラのY座標がマップチップのY座標の中に入っているかチェック通ったら左右判定に入る.
+			if (chipPos.y < playerPos.y + (mapChipHeight / 2) 
+				&& chipPos.y + mapChipHeight > playerPos.y - ( mapChipHeight / 2 ))
+			{
+				
+				//右判定.
+				if (nextX + (mapChipWidth / 2) > chipPos.x 
+					&& chipPos.x + mapChipWidth > nextX )
+				{
+					player.mAcceleVector.x = 0;
+					player.mSpriteObject.mPos.x = chipPos.x - (mapChipWidth / 2);
+				}
+				//左判定.
+				else if (nextX - (mapChipWidth / 2) < chipPos.x + mapChipWidth
+					&& nextX  > chipPos.x + mapChipWidth )
+				{
+					player.mAcceleVector.x = 0;
+					player.mSpriteObject.mPos.x = chipPos.x + mapChipWidth + (mapChipWidth / 2);
 				}
 			}
 		}
 	}
 
-	player.mSpriteObject.mPos.y += player.mGravity;
+	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
+	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
 }
 
@@ -507,7 +528,7 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 	player.mSpriteObject.mRect = { 0 , 0 , 64 , 64 };
 	player.mSpriteObject.mpTex = baseCharaTex;
 	player.mScaleVector = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-	player.mSpriteObject.mPos = D3DXVECTOR3(100.0f,100.0f,0.0f);
+	player.mSpriteObject.mPos = D3DXVECTOR3(150.0f,150.0f,0.0f);
 
 	srand(time(0));
 
