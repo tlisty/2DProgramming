@@ -43,6 +43,7 @@ const int mapChipColumn = 20;
 const RECT skyRect = {0,0,64,64};
 const RECT wallRect = { 64,0,128,64 };
 const float gravity = 0.9f;
+const int speedX = 6.0f;
 
 ////  グローバル変数宣言
 
@@ -94,6 +95,8 @@ POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
+bool LoadMapChipFile();
+
 const bool isHitRect(const RECT & aRect, const RECT & bRect)
 {
 	const auto result = aRect.left < bRect.right && bRect.left < aRect.right && aRect.top < bRect.bottom && bRect.top < aRect.bottom;
@@ -117,13 +120,13 @@ void Update(void)
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		player.mAcceleVector.x += 3.0f;
+		player.mAcceleVector.x += speedX;
 		player.mScaleVector.x = 1.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 	{
-		player.mAcceleVector.x -= 3.0f;
+		player.mAcceleVector.x -= speedX;
 		player.mScaleVector.x = -1.0f;
 	}
 
@@ -131,6 +134,11 @@ void Update(void)
 	{
 		//player.mSpriteObject.mPos.y -= 3.0f;
 		player.mAcceleVector.y = -15.f;
+	}
+
+	if (GetAsyncKeyState('R') & 0x8000)
+	{
+		LoadMapChipFile();
 	}
 
 	player.mAcceleVector.y += gravity;
@@ -173,14 +181,14 @@ void Update(void)
 				
 				//右判定.
 				if (nextX + (mapChipWidth / 2) > chipPos.x 
-					&& chipPos.x + mapChipWidth > nextX )
+					&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x - (mapChipWidth / 2);
 				}
 				//左判定.
 				else if (nextX - (mapChipWidth / 2) < chipPos.x + mapChipWidth
-					&& nextX  > chipPos.x + mapChipWidth )
+					&& playerPos.x + (mapChipWidth / 2)  > chipPos.x + mapChipWidth )
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x + mapChipWidth + (mapChipWidth / 2);
@@ -192,6 +200,8 @@ void Update(void)
 	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
 	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
+	printf("\nplayerPos.x = %.3f\n", playerPos.x);
+	printf("playerPos.y = %.3f\n",playerPos.y);
 }
 
 // 3D描画
@@ -480,48 +490,24 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 	timeBeginPeriod(1);
 
-
+	// コンソールを作成する
+	AllocConsole();
+	// 標準入出力に割り当てる
+	FILE* fp = NULL;
+	// 昔のコード
+	//freopen("CONOUT$", "w", stdout);
+	//freopen("CONIN$", "r", stdin);
+	// 現在のコード
+	freopen_s(&fp, "CONOUT$", "w", stdout);
+	freopen_s(&fp, "CONIN$", "r", stdin);
 
 	// ゲームに関する初期化処理 ---------------------------
 	//テクスチャ読み込み.
+
 	LoadText(&baseChipTex, "Resorces/MapChip/chip01.png", 320, 320, NULL);	// マップチップ.
 	LoadText(&baseCharaTex, "Resorces/Chara/chara.png", 64, 64, NULL);		// 自機.
 
-	FILE * fp;
-	int column = 0, row = 0;
-	if ( (fp = fopen("test.txt", "r") ) != NULL)
-	{
-		char ch;
-		while((ch = fgetc(fp)) != EOF)
-		{
-			if( ch == '\n' )
-			{
-				row++;
-				column = 0;
-			}
-			else
-			{
-				mapChipList[row][column].mSpriteObject.mpTex = baseChipTex;
-				mapChipList[row][column].mSpriteObject.mPos = D3DXVECTOR3( column * mapChipWidth , row * mapChipHeight , 0 );
-				D3DXMatrixTranslation(&mapChipList[row][column].mSpriteObject.mMatrix, mapChipList[row][column].mSpriteObject.mPos.x, mapChipList[row][column].mSpriteObject.mPos.y, mapChipList[row][column].mSpriteObject.mPos.z);
-				mapChipList[row][column].mType = static_cast<eChipType>(ch - 0x30);
-				switch (mapChipList[row][column].mType)
-				{
-				default:
-					break;
-				case eChipType::eSky:
-					mapChipList[row][column].mSpriteObject.mRect = skyRect;
-					break;
-				case eChipType::eWall:
-					mapChipList[row][column].mSpriteObject.mRect = wallRect;
-					break;
-				}
-				 
-				column++;
-			}
-		}
-	}
-	fclose(fp);
+	LoadMapChipFile();
 
 	// 自機.
 	//player = new tSpriteObject();
@@ -574,4 +560,49 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 	lpD3D->Release();
 
 	return (int)msg.wParam;
+}
+
+bool LoadMapChipFile()
+{
+	FILE* fp = nullptr;
+	int column = 0, row = 0;
+	if ((fp = fopen("test.txt", "r")) != nullptr)
+	{
+		char ch;
+		while ((ch = fgetc(fp)) != EOF)
+		{
+			if (ch == '\n')
+			{
+				row++;
+				column = 0;
+			}
+			else
+			{
+				mapChipList[row][column].mSpriteObject.mpTex = baseChipTex;
+				mapChipList[row][column].mSpriteObject.mPos = D3DXVECTOR3(column * mapChipWidth, row * mapChipHeight, 0);
+				D3DXMatrixTranslation(&mapChipList[row][column].mSpriteObject.mMatrix, mapChipList[row][column].mSpriteObject.mPos.x, mapChipList[row][column].mSpriteObject.mPos.y, mapChipList[row][column].mSpriteObject.mPos.z);
+				mapChipList[row][column].mType = static_cast<eChipType>(ch - 0x30);
+				switch (mapChipList[row][column].mType)
+				{
+				default:
+					break;
+				case eChipType::eSky:
+					mapChipList[row][column].mSpriteObject.mRect = skyRect;
+					break;
+				case eChipType::eWall:
+					mapChipList[row][column].mSpriteObject.mRect = wallRect;
+					break;
+				}
+
+				column++;
+			}
+		}
+	}
+	else
+	{
+		_ASSERT_EXPR(false, L"ファイル読み込み失敗");
+		return false;
+	}
+	fclose(fp);
+	return true;
 }
