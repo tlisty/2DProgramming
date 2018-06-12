@@ -145,11 +145,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CGameFrame.cpp" />
     <ClCompile Include="DebugRectLine.cpp" />
     <ClCompile Include="GameBase.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CGameFrame.h" />
     <ClInclude Include="DebugRectLine.h" />
     <ClInclude Include="GameBase.h" />
   </ItemGroup>
