@@ -19,6 +19,7 @@ public:
 	void LateUpdate();
 	void Draw();
 	HWND CreateHWND(HINSTANCE aHInst, const int aCmdShow);
+	WNDCLASS CreateWNDCLASS();
 
 private:
 

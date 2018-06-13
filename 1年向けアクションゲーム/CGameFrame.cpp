@@ -14,11 +14,9 @@ CGameFrame::CGameFrame()
 {
 }
 
-
 CGameFrame::~CGameFrame()
 {
 }
-
 
 HWND CGameFrame::CreateHWND(HINSTANCE aHInst, const int aCmdShow)
 {
@@ -50,5 +48,40 @@ HWND CGameFrame::CreateHWND(HINSTANCE aHInst, const int aCmdShow)
 	}
 
 	return result;
-	
+}
+
+WNDCLASS CGameFrame::CreateWNDCLASS(HINSTANCE aHInst)
+{
+	WNDCLASS wc;
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = WndFunc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = aHInst;
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wc.lpszMenuName = NULL;
+	wc.lpszClassName = mAppName.c_str();
+
+	RegisterClass(&wc);
+}
+
+LRESULT APIENTRY WndFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	case WM_KEYDOWN:
+		switch (wParam) {
+		case VK_ESCAPE:
+			PostQuitMessage(0);
+			return 0;
+		}
+		return 0;
+
+	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+
 }
