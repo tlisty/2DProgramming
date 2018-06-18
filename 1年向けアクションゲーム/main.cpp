@@ -43,7 +43,8 @@ const int mapChipColumn = 20;
 const RECT skyRect = {0,0,64,64};
 const RECT wallRect = { 64,0,128,64 };
 const float gravity = 0.9f;
-const int speedX = 6.0f;
+const int speedX = 6;
+const int hitRange = 1;
 
 ////  グローバル変数宣言
 
@@ -146,11 +147,15 @@ void Update(void)
 	const auto nextY = player.mSpriteObject.mPos.y + player.mAcceleVector.y;
 	const auto nextX = player.mSpriteObject.mPos.x + player.mAcceleVector.x;
 	const auto & playerPos = player.mSpriteObject.mPos;
-	for (int row = 0; row < mapChipRow; row++)
+	//マップチップ配置の中から自分がどこにいるか判定する.
+	const auto startRow = playerPos.y / mapChipHeight;
+	const auto startColumn = playerPos.x / mapChipWidth;
+	for (int row = startRow - hitRange; row < startRow + hitRange; row++)
 	{
-		for (int column = 0; column < mapChipColumn; column++)
+		for (int column = startColumn - hitRange; column < startColumn + hitRange; column++)
 		{
 			if (mapChipList[row][column].mType != eChipType::eWall) { continue; }
+
 			auto & chipPos = mapChipList[row][column].mSpriteObject.mPos;
 			
 			//キャラのX座標がマップチップのX座標の中に入っているかチェック通ったら上下判定に入る.
@@ -159,39 +164,48 @@ void Update(void)
 			{
 				//上判定.
 				if (nextY + (mapChipHeight / 2) > chipPos.y 
-					&& nextY < chipPos.y )
+					&& nextY- (mapChipHeight / 2)< chipPos.y )
 				{
 					player.mAcceleVector.y = 0;
 					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
+					printf("upHit\n");
 				}
 				//下判定.
 				else if (nextY - (mapChipHeight / 2) < chipPos.y + mapChipHeight 
-					&& nextY > chipPos.y + mapChipHeight)
+					&& nextY + (mapChipHeight / 2)> chipPos.y + mapChipHeight)
 				{
 					
 					player.mAcceleVector.y = 0; 
 					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipHeight / 2);
+					printf("downHit\n");
 				}
 			}
 
 			//キャラのY座標がマップチップのY座標の中に入っているかチェック通ったら左右判定に入る.
-			if (chipPos.y < playerPos.y + (mapChipHeight / 2) 
-				&& chipPos.y + mapChipHeight > playerPos.y - ( mapChipHeight / 2 ))
+			if (chipPos.y < playerPos.y + (mapChipHeight / 2)
+				&& chipPos.y + mapChipHeight > playerPos.y - (mapChipHeight / 2))
 			{
-				
 				//右判定.
-				if (nextX + (mapChipWidth / 2) > chipPos.x 
-					&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
+				if (nextX + (mapChipWidth / 2) > chipPos.x
+					&& nextX - (mapChipWidth / 2) < chipPos.x)
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x - (mapChipWidth / 2);
+					//printf("\nplayerPos.x = %.3f\n", playerPos.x);
+					//printf("playerPos.y = %.3f\n", playerPos.y);
+					printf("rightHit\n");
 				}
 				//左判定.
 				else if (nextX - (mapChipWidth / 2) < chipPos.x + mapChipWidth
-					&& playerPos.x + (mapChipWidth / 2)  > chipPos.x + mapChipWidth )
+					&& nextX + (mapChipWidth / 2) > chipPos.x + mapChipWidth)
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x + mapChipWidth + (mapChipWidth / 2);
+
+					//printf("\nplayerPos.x = %.3f\n", playerPos.x);
+					//printf("playerPos.y = %.3f\n", playerPos.y);
+					printf("leftHit\n");
+
 				}
 			}
 		}
@@ -200,8 +214,6 @@ void Update(void)
 	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
 	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
-	printf("\nplayerPos.x = %.3f\n", playerPos.x);
-	printf("playerPos.y = %.3f\n",playerPos.y);
 }
 
 // 3D描画
@@ -490,17 +502,15 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 	timeBeginPeriod(1);
 
-	// コンソールを作成する
-	AllocConsole();
 	// 標準入出力に割り当てる
 	FILE* fp = NULL;
-	// 昔のコード
-	//freopen("CONOUT$", "w", stdout);
-	//freopen("CONIN$", "r", stdin);
+	
+	// コンソールを作成する
+	AllocConsole();
 	// 現在のコード
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 	freopen_s(&fp, "CONIN$", "r", stdin);
-
+	
 	// ゲームに関する初期化処理 ---------------------------
 	//テクスチャ読み込み.
 
