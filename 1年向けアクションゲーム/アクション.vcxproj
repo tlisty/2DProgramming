@@ -23,7 +23,7 @@
     <ProjectGuid>{95FA854B-FAAB-40E3-ACF1-FF9332ED6035}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>シューティング</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -145,12 +145,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CEnemy.cpp" />
     <ClCompile Include="CGameFrame.cpp" />
     <ClCompile Include="DebugRectLine.cpp" />
     <ClCompile Include="GameBase.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CEnemy.h" />
     <ClInclude Include="CGameFrame.h" />
     <ClInclude Include="DebugRectLine.h" />
     <ClInclude Include="GameBase.h" />
