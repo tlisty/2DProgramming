@@ -1,5 +1,13 @@
+#include<algorithm>
+#include<vector>
+#include<random>
+
 #include "CGameFrame.h"
 #include "CEnemy.h"
+#include "CFlyEnemy.h"
+#include "Collision.h"
+#include "CSpriteObject.h"
+
 
 // 頂点フォーマットの定義
 struct VERTEX
@@ -20,6 +28,10 @@ const float gravity = 0.9f;
 const int speedX = 6;
 const int hitRange = 1;
 
+
+std::vector<int> intList;
+std::vector<CEnemy> testEnemyList;
+
 ////  グローバル変数宣言
 
 LPD3DXSPRITE	lpSprite;	// スプライト
@@ -28,26 +40,6 @@ LPD3DXFONT		lpFont;		// フォント
 							//ベーステクスチャ.
 LPDIRECT3DTEXTURE9 baseChipTex, baseCharaTex;
 
-struct tSpriteObject
-{
-	LPDIRECT3DTEXTURE9	mpTex;
-	D3DXVECTOR3			mPos;
-	D3DXMATRIX			mMatrix;
-	RECT				mRect;
-};
-
-enum eChipType
-{
-	eWall,
-	eSky
-};
-
-struct tChipObject
-{
-	tSpriteObject mSpriteObject;
-	eChipType     mType;
-};
-
 struct tPlayerObject
 {
 	tSpriteObject mSpriteObject;
@@ -55,10 +47,11 @@ struct tPlayerObject
 	D3DXMATRIX    mScaleMatrix;
 	D3DXVECTOR3	  mScaleVector;
 	D3DXVECTOR3	  mAcceleVector;
+	bool		  mJumpFlg;
 };
 
 tPlayerObject player;
-tChipObject mapChipList[mapChipRow][mapChipColumn];
+std::vector<std::vector<tChipObject*>> mapChipList;
 
 void CGameFrame::LoadText(LPDIRECT3DTEXTURE9 *lpTex, char fname[], int W, int H, D3DCOLOR Color)
 {
@@ -71,6 +64,7 @@ bool LoadMapChipFile()
 {
 	FILE* fp = nullptr;
 	int column = 0, row = 0;
+	std::vector<tChipObject*> list;
 	if ((fp = fopen("test.txt", "r")) != nullptr)
 	{
 		char ch;
@@ -80,25 +74,28 @@ bool LoadMapChipFile()
 			{
 				row++;
 				column = 0;
+				mapChipList.push_back(list);
+				list.clear();
 			}
 			else
 			{
-				mapChipList[row][column].mSpriteObject.mpTex = baseChipTex;
-				mapChipList[row][column].mSpriteObject.mPos = D3DXVECTOR3(column * mapChipWidth, row * mapChipHeight, 0);
-				D3DXMatrixTranslation(&mapChipList[row][column].mSpriteObject.mMatrix, mapChipList[row][column].mSpriteObject.mPos.x, mapChipList[row][column].mSpriteObject.mPos.y, mapChipList[row][column].mSpriteObject.mPos.z);
-				mapChipList[row][column].mType = static_cast<eChipType>(ch - 0x30);
-				switch (mapChipList[row][column].mType)
+				auto mapChiObject = new tChipObject();
+				mapChiObject->mSpriteObject.mpTex = baseChipTex;
+				mapChiObject->mSpriteObject.mPos = D3DXVECTOR3(column * mapChipWidth, row * mapChipHeight, 0);
+				D3DXMatrixTranslation(&mapChiObject->mSpriteObject.mMatrix, mapChiObject->mSpriteObject.mPos.x, mapChiObject->mSpriteObject.mPos.y, mapChiObject->mSpriteObject.mPos.z);
+				mapChiObject->mType = static_cast<eChipType>(ch - 0x30);
+				switch (mapChiObject->mType)
 				{
 				default:
 					break;
 				case eChipType::eSky:
-					mapChipList[row][column].mSpriteObject.mRect = skyRect;
+					mapChiObject->mSpriteObject.mRect = skyRect;
 					break;
 				case eChipType::eWall:
-					mapChipList[row][column].mSpriteObject.mRect = wallRect;
+					mapChiObject->mSpriteObject.mRect = wallRect;
 					break;
 				}
-
+				list.push_back(mapChiObject);
 				column++;
 			}
 		}
@@ -159,12 +156,15 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 
 	LoadMapChipFile();
 
+	srand(timeGetTime());
+
 	// 自機.
 	//player = new tSpriteObject();
 	player.mSpriteObject.mRect = { 0 , 0 , 64 , 64 };
 	player.mSpriteObject.mpTex = baseCharaTex;
 	player.mScaleVector = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 	player.mSpriteObject.mPos = D3DXVECTOR3(150.0f, 150.0f, 0.0f);
+	player.mSpriteObject.mFlg = true;
 
 	// スプライト作成
 	D3DXCreateSprite(mpD3DDevice,&lpSprite);
@@ -177,10 +177,14 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 	auto * enemy = CEnemy::Create();
 	mEnemyList.push_back(enemy);
 	enemy->SetTexture( enemyTexture );
-	enemy->SetPosition(D3DXVECTOR2(300.0f,638.0f));
+	enemy->SetPosition(D3DXVECTOR2(300.0f,500.0f));
 	enemy->SetMovePoint(75.0f);
 	enemy->SetMoveState(CEnemy::eMoveState::eRight);
-	enemy->SetMoveVector(D3DXVECTOR2(1.0f, 1.0f));
+	enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
+
+	mpFlyEnemy = &CFlyEnemy::Create()
+		.Texture(enemyTexture)
+		.StartPosition(D3DXVECTOR2(400.0f, 400.0f));
 
 	return true;
 }
@@ -192,6 +196,7 @@ void CGameFrame::Release()
 
 void CGameFrame::Update()
 {
+
 	player.mAcceleVector.x = 0.0f;
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
@@ -206,22 +211,79 @@ void CGameFrame::Update()
 		player.mScaleVector.x = -1.0f;
 	}
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && player.mJumpFlg)
 	{
 		//player.mSpriteObject.mPos.y -= 3.0f;
-		player.mAcceleVector.y = -15.f;
+		player.mAcceleVector.y = -20.0f;
+		player.mJumpFlg = false;
 	}
 
 	if (GetAsyncKeyState('R') & 0x8000)
 	{
 		LoadMapChipFile();
+		player.mSpriteObject.mFlg = true;
+		//if( mEnemyList.empty() )
+		{
+			auto * enemy = CEnemy::Create();
+			mEnemyList.push_back(enemy);
+
+			LPDIRECT3DTEXTURE9 enemyTexture;
+			LoadText(&enemyTexture, "Resorces/kuroTenemy.png", 64, 64, D3DCOLOR_ARGB(255, 255, 255, 255));
+			enemy->SetTexture(enemyTexture);
+			enemy->SetPosition(D3DXVECTOR2(rand() % 1100 + 64 , rand() % 600 + 64));
+			enemy->SetMovePoint(75.0f);
+			enemy->SetMoveState(CEnemy::eMoveState::eRight);
+			enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
+		}
 	}
 
 	player.mAcceleVector.y += gravity;
 
+	const auto & playerPos = player.mSpriteObject.mPos;
+	
+
+	if (player.mSpriteObject.mFlg)
+	{
+		//敵と自機の当たり判定.
+		for (const auto enemy : mEnemyList)
+		{
+			const auto result = RectCollision(D3DXVECTOR2(playerPos.x, playerPos.y), D3DXVECTOR2(player.mAcceleVector.x, player.mAcceleVector.y)
+				, D3DXVECTOR3(32.0f, 32.0f, 32.0f), enemy->GetPosition(), enemy->GetCenterPoint());
+			switch (result)
+			{
+			default:
+			case eHitDirection::eNone:
+				break;
+			case eHitDirection::eUp:
+				if(player.mAcceleVector.y > 0.0f )
+				{
+					printf("\nenemy break\n");
+					player.mAcceleVector.y = -10.f;
+					delete(enemy);
+					auto result = std::remove(mEnemyList.begin(), mEnemyList.end() , enemy);
+					mEnemyList.erase(result);
+					printf("moveVector.y = %.3f ", player.mAcceleVector.y);
+				}
+				else
+				{
+					printf("\nplayer up break\n");
+					player.mSpriteObject.mFlg = false;
+
+				}
+				break;
+			case eHitDirection::eDown:
+			case eHitDirection::eLeft:
+			case eHitDirection::eRight:
+				printf("\nplayer break\n");
+				player.mSpriteObject.mFlg = false;
+				break;
+			}
+		}
+	}
+
 	const auto nextY = player.mSpriteObject.mPos.y + player.mAcceleVector.y;
 	const auto nextX = player.mSpriteObject.mPos.x + player.mAcceleVector.x;
-	const auto & playerPos = player.mSpriteObject.mPos;
+
 	//マップチップ配置の中から自分がどこにいるか判定する.
 	const auto startRow = playerPos.y / mapChipHeight;
 	const auto startColumn = playerPos.x / mapChipWidth;
@@ -229,9 +291,9 @@ void CGameFrame::Update()
 	{
 		for (int column = startColumn - hitRange; column < startColumn + hitRange; column++)
 		{
-			if (mapChipList[row][column].mType != eChipType::eWall) { continue; }
+			if (mapChipList[row][column]->mType != eChipType::eWall) {continue; }
 
-			auto & chipPos = mapChipList[row][column].mSpriteObject.mPos;
+			auto & chipPos = mapChipList[row][column]->mSpriteObject.mPos;
 
 			//キャラのX座標がマップチップのX座標の中に入っているかチェック通ったら上下判定に入る.
 			if (chipPos.x < playerPos.x + (mapChipWidth / 2)
@@ -244,7 +306,7 @@ void CGameFrame::Update()
 				{
 					player.mAcceleVector.y = 0;
 					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
-					printf("upHit\n");
+					player.mJumpFlg = true;
 				}
 				//下判定.
 				//上辺だけの判定だとターゲットの上にいるときも判定してしまうので下辺がターゲットの下辺より上いるかも確認する.
@@ -254,7 +316,6 @@ void CGameFrame::Update()
 
 					player.mAcceleVector.y = 0;
 					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipHeight / 2);
-					printf("downHit\n");
 				}
 			}
 
@@ -268,7 +329,6 @@ void CGameFrame::Update()
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x - (mapChipWidth / 2);
-					printf("rightHit\n");
 				}
 				//左判定.
 				else if (nextX - (mapChipWidth / 2) < chipPos.x + mapChipWidth
@@ -276,8 +336,6 @@ void CGameFrame::Update()
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x + mapChipWidth + (mapChipWidth / 2);
-					printf("leftHit\n");
-
 				}
 			}
 		}
@@ -288,8 +346,10 @@ void CGameFrame::Update()
 
 	for (auto * enemy : mEnemyList)
 	{
-		enemy->Update();
+		enemy->Update(mapChipList);
 	}
+
+	mpFlyEnemy->Update();
 
 }
 
@@ -303,6 +363,7 @@ void CGameFrame::LateUpdate()
 	{
 		enemy->LateUpdate();
 	}
+	mpFlyEnemy->LateUpdate();
 }
 
 void CGameFrame::Draw()
@@ -354,6 +415,15 @@ void CGameFrame::Draw2D()
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
 
+	for (const auto & list : mapChipList)
+	{
+		for (const auto * mapChip : list)
+		{
+			lpSprite->SetTransform(&mapChip->mSpriteObject.mMatrix);
+			lpSprite->Draw(mapChip->mSpriteObject.mpTex, &mapChip->mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+		}
+	}
+	/*
 	for (int row = 0; row < mapChipRow; row++)
 	{
 		for (int column = 0; column < mapChipColumn; column++)
@@ -362,15 +432,20 @@ void CGameFrame::Draw2D()
 			lpSprite->Draw(mapChipList[row][column].mSpriteObject.mpTex, &mapChipList[row][column].mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
 		}
 	}
+	*/
 
 	for (auto * enemy : mEnemyList)
 	{
 		enemy->Draw(lpSprite);
 	}
 
-	lpSprite->SetTransform(&player.mSpriteObject.mMatrix);
-	lpSprite->Draw(player.mSpriteObject.mpTex, &player.mSpriteObject.mRect, &D3DXVECTOR3(32.0f, 32.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+	mpFlyEnemy->Draw(lpSprite);
 
+	if(player.mSpriteObject.mFlg )
+	{
+		lpSprite->SetTransform(&player.mSpriteObject.mMatrix);
+		lpSprite->Draw(player.mSpriteObject.mpTex, &player.mSpriteObject.mRect, &D3DXVECTOR3(32.0f, 32.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+	}
 
 	// 描画終了
 	lpSprite->End();

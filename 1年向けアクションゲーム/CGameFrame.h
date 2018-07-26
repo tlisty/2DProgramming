@@ -11,6 +11,7 @@
 #pragma comment(lib, "winmm.lib")
 
 class CEnemy;
+class CFlyEnemy;
 
 class CGameFrame
 {
@@ -51,4 +52,5 @@ private:
 	D3DPRESENT_PARAMETERS	mD3Dpp;
 	WNDCLASS				mWndClass;
 	std::vector<CEnemy*>	mEnemyList;
+	CFlyEnemy *				mpFlyEnemy;
 };
