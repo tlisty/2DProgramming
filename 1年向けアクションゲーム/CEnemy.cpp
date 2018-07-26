@@ -1,5 +1,7 @@
 #include "CEnemy.h"
+#include "Collision.h"
 #include<cassert>
+#include"CSpriteObject.h"
 
 tMovePoint::tMovePoint(const float aStart, const float aEnd)
 	: mStart(0.0f)
@@ -23,7 +25,7 @@ CEnemy::CEnemy()
 	: mpTexture(nullptr)
 	, mPosition(0.0f,0.0f)
 	, mMoveVector(0.0f,0.0f)
-	, mCenterPoint(0.0f,0.0f,0.0f)
+	, mCenterPoint(32.0f,32.0f,0.0f)
 	, mMatrix()
 	, mRect({0,0,64,64})
 	, mColor(D3DCOLOR_ARGB(255,255,255,255))
@@ -46,8 +48,10 @@ CEnemy * CEnemy::Create()
 	return result;
 }
 
-void CEnemy::Update()
+void CEnemy::Update(const std::vector<std::vector<tChipObject*>> & aChipObjects)
 {
+
+	mMoveVector.x = 0.0f;
 	switch (mMoveState)
 	{
 	case eRight:
@@ -60,10 +64,58 @@ void CEnemy::Update()
 	default:
 		break;
 	}
+
+	mMoveVector.y += 1.0f;
+
+	const auto & playerPos = mPosition;
+	//マップチップ配置の中から自分がどこにいるか判定する.
+	const auto startRow = playerPos.y / 64;
+	const auto startColumn = playerPos.x / 64;
+
+	for (int row = startRow - 1; row < startRow + 1; row++)
+	{
+		for (int column = startColumn - 1; column < startColumn + 1; column++)
+		{
+			if (aChipObjects[row][column]->mType != eChipType::eWall) 
+			{ 
+				continue; 
+			}
+
+			auto & chipPos = aChipObjects[row][column]->mSpriteObject.mPos;
+			
+			const auto directon = RectCollision(mPosition,mMoveVector,mCenterPoint,D3DXVECTOR2(chipPos.x, chipPos.y),D3DXVECTOR3(0.0f,0.0f,0.0f));
+			switch (directon)
+			{
+			case eHitDirection::eUp:
+				mMoveVector.y = 0;
+				mPosition.y = chipPos.y - 32;
+				break;
+			case eHitDirection::eDown:
+				mMoveVector.y = 0;
+				mPosition.y = chipPos.y + 32 + 64;
+				break;
+			case eHitDirection::eLeft:
+				mMoveVector.x = 0;
+				mPosition.x = chipPos.x - 32;
+				mMoveState = eMoveState::eLeft;
+				break;
+			case eHitDirection::eRight:
+				mMoveVector.x = 0;
+				mPosition.x = chipPos.x + 32 + 64;
+				mMoveState = eMoveState::eRight;
+				break;
+			case eHitDirection::eNone:
+			default:
+				break;
+			}
+		}
+	}
+	
 }
 
 void CEnemy::LateUpdate()
 {
+	mPosition += mMoveVector;
 	D3DXMatrixTranslation(&mMatrix, mPosition.x, mPosition.y, 0.0f);
 }
 
@@ -114,24 +166,17 @@ void CEnemy::SetMoveState(const eMoveState aMoveState)
 	mMoveState = aMoveState;
 }
 
+const D3DXVECTOR3 & CEnemy::GetCenterPoint() const
+{
+	return mCenterPoint;
+}
+
 void CEnemy::RightMove()
 {
-	mPosition.x += mMoveVector.x;
-	const bool isEnd = (mPosition.x > mMovePoint.mEnd);
-	if (isEnd)
-	{
-		mPosition.x = mMovePoint.mEnd;
-		mMoveState = eLeft;
-	}
+	mMoveVector.x += 3.0f;
 }
 
 void CEnemy::LeftMove()
 {
-	mPosition.x -= mMoveVector.x;
-	const bool isEnd = (mPosition.x < mMovePoint.mStart);
-	if (isEnd)
-	{
-		mPosition.x = mMovePoint.mStart;
-		mMoveState = eRight;
-	}
+	mMoveVector.x -= 3.0f;
 }

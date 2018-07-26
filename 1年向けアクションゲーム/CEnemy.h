@@ -2,6 +2,10 @@
 
 #include<d3dx9.h>
 #include<string>
+#include<vector>
+
+enum eChipType;
+struct tChipObject;
 
 struct tMovePoint
 {
@@ -29,7 +33,7 @@ public:
 
 	static CEnemy * Create();
 
-	void Update();
+	void Update(const std::vector<std::vector<tChipObject*>> & aChipObjects);
 	void LateUpdate();
 	void Draw(LPD3DXSPRITE apSprite);
 	void SetTexture(const LPDIRECT3DTEXTURE9 apTexture);
@@ -40,6 +44,7 @@ public:
 	void SetMovePoint( const tMovePoint & aMovePoint );
 	void SetMovePoint(const float aDistance);
 	void SetMoveState(const eMoveState aMoveState);
+	const D3DXVECTOR3 & GetCenterPoint() const;
 
 private:
 	
