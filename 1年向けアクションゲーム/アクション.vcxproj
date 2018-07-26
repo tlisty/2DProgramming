@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CEnemy.cpp" />
+    <ClCompile Include="CFlyEnemy.cpp" />
     <ClCompile Include="CGameFrame.cpp" />
     <ClCompile Include="DebugRectLine.cpp" />
     <ClCompile Include="GameBase.cpp" />
@@ -153,7 +154,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CEnemy.h" />
+    <ClInclude Include="CFlyEnemy.h" />
     <ClInclude Include="CGameFrame.h" />
+    <ClInclude Include="Collision.h" />
+    <ClInclude Include="CSpriteObject.h" />
     <ClInclude Include="DebugRectLine.h" />
     <ClInclude Include="GameBase.h" />
   </ItemGroup>
