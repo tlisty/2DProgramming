@@ -345,9 +345,6 @@ void CGameFrame::Update()
 	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
 	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
-	auto it = mEnemyList.begin();
-	(*it)->Update(mapChipList);
-
 	for (auto * enemy : mEnemyList)
 	{
 		enemy->Update(mapChipList);
@@ -459,6 +456,7 @@ void CGameFrame::Draw3D()
 {
 	Primitive::Draw::Triangle(mpD3DDevice, D3DXVECTOR3(0.0f, 0.0f,0.0f), D3DXVECTOR3(0.5f, -0.5f,0.0f), D3DXVECTOR3(-0.5f,-0.5f, 0.0f), Color::Black);
 	Primitive::Draw::Polygon(mpD3DDevice,3, D3DXVECTOR3(0.5f, 0.5f, 0.0f),1,0,true);
+	Primitive::Draw::Rect(mpD3DDevice,0.0f,0.0f,2.0f,1.0f,90.0f,Color::Green);
 }
 
 

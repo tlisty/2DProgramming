@@ -7,9 +7,9 @@ namespace Color
 {
 	DWORD White		= D3DCOLOR_ARGB(255, 255, 255, 255);
 	DWORD Black		= D3DCOLOR_ARGB(255, 0, 0, 0);
-	DWORD Red		= D3DCOLOR_ARGB(255, 0, 0, 0);
-	DWORD Green		= D3DCOLOR_ARGB(255, 0, 0, 0);
-	DWORD Blue		= D3DCOLOR_ARGB(255, 0, 0, 0);
+	DWORD Red		= D3DCOLOR_ARGB(255, 255, 0, 0);
+	DWORD Green		= D3DCOLOR_ARGB(255, 0, 255, 0);
+	DWORD Blue		= D3DCOLOR_ARGB(255, 0, 0, 255);
 	DWORD Perple	= D3DCOLOR_ARGB(255,127,17,132);
 }
 
@@ -38,6 +38,31 @@ namespace Primitive
 				, vertex
 				, sizeof(tVertex));
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+		}
+
+		//未完成（角度をつけるバグる）
+		void Rect(const LPDIRECT3DDEVICE9 apD3dDevice, const float aX , const float aY , const float aWidth , const float aHeight , const float aDegree, const D3DCOLOR & aColor)
+		{
+			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+			const float x = aX - aWidth / 2;
+			const float y = aY - aHeight / 2;
+			tVertex vertex[] = {
+				{ D3DXVECTOR3(x,y,0.0f),aColor },
+				{ D3DXVECTOR3(x,(y+aHeight),0.0f),aColor },
+				{ D3DXVECTOR3((x+aWidth),y,0.0f),aColor },
+				{ D3DXVECTOR3((x+aWidth),(y+aHeight),0.0f),aColor },
+			};
+			D3DXMATRIX mRot;
+			D3DXMatrixRotationZ(&mRot, aDegree);
+			apD3dDevice->SetTransform(D3DTS_WORLD,&mRot );
+			apD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP
+				, 2
+				, vertex
+				, sizeof(tVertex));
+			//使った後は元通りに.
+			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+			D3DXMatrixIdentity(&mRot);
+			apD3dDevice->SetTransform(D3DTS_WORLD, &mRot);
 		}
 
 		const std::vector<D3DXVECTOR3> & Polygon(const LPDIRECT3DDEVICE9 apD3dDevice, const int aPolygonNum, const D3DXVECTOR3 & aPosition, const int aLength, const int aDegree = 0 , bool aWireFrame = false, const D3DCOLOR & aColor = Color::Perple)
