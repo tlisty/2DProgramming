@@ -7,6 +7,7 @@
 #include "CFlyEnemy.h"
 #include "Collision.h"
 #include "CSpriteObject.h"
+#include "PrimitiveShape.h"
 
 
 // 頂点フォーマットの定義
@@ -344,6 +345,9 @@ void CGameFrame::Update()
 	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
 	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
+	auto it = mEnemyList.begin();
+	(*it)->Update(mapChipList);
+
 	for (auto * enemy : mEnemyList)
 	{
 		enemy->Update(mapChipList);
@@ -368,8 +372,8 @@ void CGameFrame::LateUpdate()
 
 void CGameFrame::Draw()
 {
-	Draw2D();
 	Draw3D();
+	Draw2D();
 }
 
 void CGameFrame::GameLoop()
@@ -420,7 +424,7 @@ void CGameFrame::Draw2D()
 		for (const auto * mapChip : list)
 		{
 			lpSprite->SetTransform(&mapChip->mSpriteObject.mMatrix);
-			lpSprite->Draw(mapChip->mSpriteObject.mpTex, &mapChip->mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+			//lpSprite->Draw(mapChip->mSpriteObject.mpTex, &mapChip->mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
 		}
 	}
 	/*
@@ -453,6 +457,8 @@ void CGameFrame::Draw2D()
 
 void CGameFrame::Draw3D()
 {
+	Primitive::Draw::Triangle(mpD3DDevice, D3DXVECTOR3(0.0f, 0.0f,0.0f), D3DXVECTOR3(0.5f, -0.5f,0.0f), D3DXVECTOR3(-0.5f,-0.5f, 0.0f), Color::Black);
+	Primitive::Draw::Polygon(mpD3DDevice,3, D3DXVECTOR3(0.5f, 0.5f, 0.0f),1,0,true);
 }
 
 
