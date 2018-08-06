@@ -65,7 +65,22 @@ namespace Primitive
 			apD3dDevice->SetTransform(D3DTS_WORLD, &mRot);
 		}
 
-		const std::vector<D3DXVECTOR3> & Polygon(const LPDIRECT3DDEVICE9 apD3dDevice, const int aPolygonNum, const D3DXVECTOR3 & aPosition, const int aLength, const int aDegree = 0 , bool aWireFrame = false, const D3DCOLOR & aColor = Color::Perple)
+		void Line(const LPDIRECT3DDEVICE9 apD3dDevice, const D3DXVECTOR3 & aBeginPos, const D3DXVECTOR3 & aEndPos)
+		{
+			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+			tVertex vertex[] = {
+				{ aBeginPos,Color::Black },
+				{ aEndPos,Color::Black },
+			};
+			apD3dDevice->DrawPrimitiveUP(D3DPT_LINELIST
+				, 1
+				, vertex
+				, sizeof(tVertex));
+			//Žg‚Á‚½Œã‚ÍŒ³’Ê‚è‚É.
+			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+		}
+
+		const std::vector<D3DXVECTOR3> & Polygon(const LPDIRECT3DDEVICE9 apD3dDevice, const int aPolygonNum, const D3DXVECTOR3 & aPosition, const float aLength, const int aDegree = 0 , bool aWireFrame = false, const D3DCOLOR & aColor = Color::Perple)
 		{
 			if (aWireFrame)
 			{
