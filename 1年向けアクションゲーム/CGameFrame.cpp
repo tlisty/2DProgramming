@@ -29,6 +29,11 @@ const float gravity = 0.9f;
 const int speedX = 6;
 const int hitRange = 1;
 
+D3DXVECTOR3 spherePos(0.0f,3.0f,0.0f);
+D3DXVECTOR3 moveVector;
+D3DXVECTOR3 lineBegin(-1.0f, 0.0f, 0.0f);
+D3DXVECTOR3 lineEnd(1.0f, 0.5f, 0.0f);
+
 
 std::vector<int> intList;
 std::vector<CEnemy> testEnemyList;
@@ -53,6 +58,70 @@ struct tPlayerObject
 
 tPlayerObject player;
 std::vector<std::vector<tChipObject*>> mapChipList;
+
+enum eClickState
+{
+	eNon,
+	eBegin,
+	ePush,
+	eEnd
+};
+eClickState clickState;
+
+bool LineCollision()
+{
+
+	/*
+	D3DXVECTOR2 ap(spherePos.x - lineBegin.x, spherePos.y - lineBegin.y);
+	D3DXVECTOR2 ab(lineEnd.y - lineBegin.x, lineEnd.y - lineBegin.x);
+
+	float cross = ap.x * ab.y - ab.x * ap.y;
+
+	float result = fabs(cross) / D3DXVec2Length(&ab);
+	printf("\nresult = %.3f\n", result);
+	*/
+	
+	printf("\n");
+
+	D3DXVECTOR2 CollisionPos;
+
+	auto sphereMovePos = spherePos + moveVector;
+	
+	auto lineXLength = (lineEnd.x - lineBegin.x);
+	auto lineYLength = (lineEnd.y - lineBegin.y);
+	auto sphereYLength = (spherePos.y - sphereMovePos.y);
+	auto sphereXLength = (spherePos.x - sphereMovePos.x);
+	auto d = lineXLength * sphereYLength - lineYLength * sphereXLength;
+	printf("lineLength = %.3f , %.3f\nsphereLength = %.3f , %.3f\n", lineXLength, lineYLength, sphereXLength, sphereYLength);
+	if (d == 0.0f) 
+	{
+		return false; 
+	}
+
+	auto u = ((sphereMovePos.x - lineBegin.x)* (spherePos.y - sphereMovePos.y) - (sphereMovePos.y - lineBegin.y)* (spherePos.x - sphereMovePos.x)) / d;
+	auto v = ((sphereMovePos.x - lineBegin.x)* (lineEnd.y - lineBegin.y) - (sphereMovePos.y - lineBegin.y)* (lineEnd.x - lineBegin.x)) / d;
+
+	printf("spherePos x = %.3f y = %.3f\n", spherePos.x, spherePos.y);
+	printf("d = %.3f u = %.3f v = %.3f\n",d,u,v);
+
+	if (u < 0.0f || u > 1.0f || v < 0.0f || v > 1.0f)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void SphereUpdate()
+{
+	moveVector.y = -0.01f;
+
+	const auto result = LineCollision();
+	if( result == false )
+	{
+		spherePos += moveVector;
+	}
+}
 
 void CGameFrame::LoadText(LPDIRECT3DTEXTURE9 *lpTex, char fname[], int W, int H, D3DCOLOR Color)
 {
@@ -221,6 +290,7 @@ void CGameFrame::Update()
 
 	if (GetAsyncKeyState('R') & 0x8000)
 	{
+		/*
 		LoadMapChipFile();
 		player.mSpriteObject.mFlg = true;
 		//if( mEnemyList.empty() )
@@ -236,6 +306,37 @@ void CGameFrame::Update()
 			enemy->SetMoveState(CEnemy::eMoveState::eRight);
 			enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
 		}
+		*/
+		spherePos = D3DXVECTOR3(0.0f, 3.0f, 0.0f);
+	}
+
+	POINT pt;
+	GetCursorPos(&pt);
+	ScreenToClient(mpHwnd, &pt);
+	//printf("\npt.x = %d , pt.y = %d\n", pt.x, pt.y);
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+	{
+		switch (clickState)
+		{
+		case eClickState::eNon:
+			lineBegin = D3DXVECTOR3((pt.x-(mScrollWidth/2)) / 100.0f,(pt.y - (mScrollHeight / 2)) / 100.0f * -1,0.0f);
+			clickState = eClickState::eBegin;
+		case eClickState::eBegin:
+			lineEnd = D3DXVECTOR3((pt.x - (mScrollWidth / 2)) / 100.0f, (pt.y - (mScrollHeight / 2)) / 100.0f * -1, 0.0f);
+			break;
+		default:
+			break;
+		}
+	}
+	else
+	{
+		/*
+		if (clickState == eClickState::eBegin)
+		{
+			lineEnd = 
+		}
+		*/
+		clickState = eClickState::eNon;
 	}
 
 	player.mAcceleVector.y += gravity;
@@ -352,6 +453,8 @@ void CGameFrame::Update()
 
 	mpFlyEnemy->Update();
 
+	LineCollision();
+	SphereUpdate();
 }
 
 void CGameFrame::LateUpdate()
@@ -454,9 +557,11 @@ void CGameFrame::Draw2D()
 
 void CGameFrame::Draw3D()
 {
-	Primitive::Draw::Triangle(mpD3DDevice, D3DXVECTOR3(0.0f, 0.0f,0.0f), D3DXVECTOR3(0.5f, -0.5f,0.0f), D3DXVECTOR3(-0.5f,-0.5f, 0.0f), Color::Black);
-	Primitive::Draw::Polygon(mpD3DDevice,3, D3DXVECTOR3(0.5f, 0.5f, 0.0f),1,0,true);
-	Primitive::Draw::Rect(mpD3DDevice,0.0f,0.0f,2.0f,1.0f,90.0f,Color::Green);
+	//Primitive::Draw::Triangle(mpD3DDevice, D3DXVECTOR3(0.0f, 0.0f,0.0f), D3DXVECTOR3(0.5f, -0.5f,0.0f), D3DXVECTOR3(-0.5f,-0.5f, 0.0f), Color::Black);
+	//Primitive::Draw::Polygon(mpD3DDevice,12, spherePos,0.5f,0,true);
+	//Primitive::Draw::Rect(mpD3DDevice,0.0f,0.0f,2.0f,1.0f,90.0f,Color::Green);
+	Primitive::Draw::Line(mpD3DDevice, spherePos, spherePos + (moveVector*10));
+	Primitive::Draw::Line(mpD3DDevice, lineBegin,lineEnd);
 }
 
 
