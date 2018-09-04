@@ -148,6 +148,7 @@
     <ClCompile Include="CEnemy.cpp" />
     <ClCompile Include="CFlyEnemy.cpp" />
     <ClCompile Include="CGameFrame.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DebugRectLine.cpp" />
     <ClCompile Include="GameBase.cpp" />
     <ClCompile Include="main.cpp" />

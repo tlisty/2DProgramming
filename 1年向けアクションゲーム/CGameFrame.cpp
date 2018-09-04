@@ -22,17 +22,18 @@ struct VERTEX
 const int mapChipWidth = 64;
 const int mapChipHeight = 64;
 const int mapChipRow = 12;
-const int mapChipColumn = 20;
+const int mapChipColumn = 36;
 const RECT skyRect = { 0,0,64,64 };
 const RECT wallRect = { 64,0,128,64 };
 const float gravity = 0.9f;
 const int speedX = 6;
 const int hitRange = 1;
+const RECT moveRect = {100,200,1100,700};
 
-D3DXVECTOR3 spherePos(0.0f,3.0f,0.0f);
+D3DXVECTOR3 spherePos(400.0f, 100.0f, 0.0f);
 D3DXVECTOR3 moveVector;
-D3DXVECTOR3 lineBegin(-1.0f, 0.0f, 0.0f);
-D3DXVECTOR3 lineEnd(1.0f, 0.5f, 0.0f);
+D3DXVECTOR3 lineBegin(300.0f, 500.0f, 0.0f);
+D3DXVECTOR3 lineEnd(500.0f, 500.0f, 0.0f);
 
 
 std::vector<int> intList;
@@ -43,7 +44,10 @@ std::vector<CEnemy> testEnemyList;
 LPD3DXSPRITE	lpSprite;	// スプライト
 LPD3DXFONT		lpFont;		// フォント
 
-							//ベーステクスチャ.
+float CameraX;
+float CameraY;
+
+//ベーステクスチャ.
 LPDIRECT3DTEXTURE9 baseChipTex, baseCharaTex;
 
 struct tPlayerObject
@@ -80,29 +84,29 @@ bool LineCollision()
 	float result = fabs(cross) / D3DXVec2Length(&ab);
 	printf("\nresult = %.3f\n", result);
 	*/
-	
+
 	printf("\n");
 
 	D3DXVECTOR2 CollisionPos;
 
 	auto sphereMovePos = spherePos + moveVector;
-	
+
 	auto lineXLength = (lineEnd.x - lineBegin.x);
 	auto lineYLength = (lineEnd.y - lineBegin.y);
 	auto sphereYLength = (spherePos.y - sphereMovePos.y);
 	auto sphereXLength = (spherePos.x - sphereMovePos.x);
 	auto d = lineXLength * sphereYLength - lineYLength * sphereXLength;
 	printf("lineLength = %.3f , %.3f\nsphereLength = %.3f , %.3f\n", lineXLength, lineYLength, sphereXLength, sphereYLength);
-	if (d == 0.0f) 
+	if (d == 0.0f)
 	{
-		return false; 
+		return false;
 	}
 
 	auto u = ((sphereMovePos.x - lineBegin.x)* (spherePos.y - sphereMovePos.y) - (sphereMovePos.y - lineBegin.y)* (spherePos.x - sphereMovePos.x)) / d;
 	auto v = ((sphereMovePos.x - lineBegin.x)* (lineEnd.y - lineBegin.y) - (sphereMovePos.y - lineBegin.y)* (lineEnd.x - lineBegin.x)) / d;
 
 	printf("spherePos x = %.3f y = %.3f\n", spherePos.x, spherePos.y);
-	printf("d = %.3f u = %.3f v = %.3f\n",d,u,v);
+	printf("d = %.3f u = %.3f v = %.3f\n", d, u, v);
 
 	if (u < 0.0f || u > 1.0f || v < 0.0f || v > 1.0f)
 	{
@@ -114,12 +118,24 @@ bool LineCollision()
 
 void SphereUpdate()
 {
-	moveVector.y = -0.01f;
+	moveVector.y = 20.5f;
 
-	const auto result = LineCollision();
-	if( result == false )
+	//const auto result = LineCollision();
+	tSegment target(D3DXVECTOR2(lineBegin.x, lineBegin.y), D3DXVECTOR2(lineEnd.x - lineBegin.x, lineEnd.y - lineBegin.y));
+	tSegment own(D3DXVECTOR2(spherePos.x, spherePos.y), D3DXVECTOR2(moveVector.x, moveVector.y));
+
+	const auto result = Collision::Segments(own, target);
+
+
+	if (result.first == false)
 	{
 		spherePos += moveVector;
+	}
+	else
+	{
+		moveVector = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		spherePos = D3DXVECTOR3(result.second.x, result.second.y, 0.0f);
+		printf("resultPos x = %.3f y = %.3f\n", result.second.x, result.second.y);
 	}
 }
 
@@ -198,14 +214,14 @@ LRESULT _stdcall WindowFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 CGameFrame::CGameFrame()
-	: mScrollWidth( 1280 )
-	, mScrollHeight( 768 )
-	, mAppName( "TSystemAction" )
-	, mIsFullScreen( false )
+	: mScrollWidth(1280)
+	, mScrollHeight(768)
+	, mAppName("TSystemAction")
+	, mIsFullScreen(false)
 	, mFvFVertex(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
-	, mpHwnd( nullptr )
-	, mpD3D( nullptr )
-	, mpD3DDevice( nullptr )
+	, mpHwnd(nullptr)
+	, mpD3D(nullptr)
+	, mpD3DDevice(nullptr)
 	, mD3Dpp()
 {
 }
@@ -217,8 +233,8 @@ CGameFrame::~CGameFrame()
 bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 {
 	mWndClass = CreateWNDCLASS(aHInst);
-	mpHwnd = CreateHWND( aHInst , aCmdShow );
-	assert( mpHwnd != nullptr , "not create mpHwnd" );
+	mpHwnd = CreateHWND(aHInst, aCmdShow);
+	assert(mpHwnd != nullptr, "not create mpHwnd");
 	CreateDirectX9();
 
 	LoadText(&baseChipTex, "Resorces/MapChip/chip01.png", 320, 320, NULL);	// マップチップ.
@@ -233,11 +249,11 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 	player.mSpriteObject.mRect = { 0 , 0 , 64 , 64 };
 	player.mSpriteObject.mpTex = baseCharaTex;
 	player.mScaleVector = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-	player.mSpriteObject.mPos = D3DXVECTOR3(150.0f, 150.0f, 0.0f);
+	player.mSpriteObject.mPos = D3DXVECTOR3(200.0f, 300.0f, 0.0f);
 	player.mSpriteObject.mFlg = true;
 
 	// スプライト作成
-	D3DXCreateSprite(mpD3DDevice,&lpSprite);
+	D3DXCreateSprite(mpD3DDevice, &lpSprite);
 	lpSprite->OnResetDevice();
 
 	LPDIRECT3DTEXTURE9 enemyTexture;
@@ -246,8 +262,8 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 	//敵生成.
 	auto * enemy = CEnemy::Create();
 	mEnemyList.push_back(enemy);
-	enemy->SetTexture( enemyTexture );
-	enemy->SetPosition(D3DXVECTOR2(300.0f,500.0f));
+	enemy->SetTexture(enemyTexture);
+	enemy->SetPosition(D3DXVECTOR2(300.0f, 500.0f));
 	enemy->SetMovePoint(75.0f);
 	enemy->SetMoveState(CEnemy::eMoveState::eRight);
 	enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
@@ -266,22 +282,48 @@ void CGameFrame::Release()
 
 void CGameFrame::Update()
 {
-
+	printf("CameraX = %.3f", CameraX);
 	player.mAcceleVector.x = 0.0f;
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		player.mAcceleVector.x += speedX;
+		if (moveRect.right < player.mSpriteObject.mPos.x + player.mAcceleVector.x + speedX + 32)
+		{
+			CameraX -= speedX;
+		}
+		else
+		{
+			player.mAcceleVector.x += speedX;
+		}
 		player.mScaleVector.x = 1.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 	{
-		player.mAcceleVector.x -= speedX;
+		if (moveRect.left > player.mSpriteObject.mPos.x - ( player.mAcceleVector.x + speedX ) - 32)
+		{
+			CameraX += speedX;
+		}
+		else
+		{
+			player.mAcceleVector.x -= speedX;
+		}
 		player.mScaleVector.x = -1.0f;
 	}
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && player.mJumpFlg)
+	/*
+	if (GetAsyncKeyState(VK_UP) & 0x8000)
+	{
+		CameraY-= 3.0f;
+	}
+
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+	{
+		CameraY += 3.0f;
+	}
+	*/
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)//&& player.mJumpFlg)
 	{
 		//player.mSpriteObject.mPos.y -= 3.0f;
 		player.mAcceleVector.y = -20.0f;
@@ -307,7 +349,7 @@ void CGameFrame::Update()
 			enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
 		}
 		*/
-		spherePos = D3DXVECTOR3(0.0f, 3.0f, 0.0f);
+		spherePos = D3DXVECTOR3(400.0f, 100.0f, 0.0f);
 	}
 
 	POINT pt;
@@ -319,10 +361,10 @@ void CGameFrame::Update()
 		switch (clickState)
 		{
 		case eClickState::eNon:
-			lineBegin = D3DXVECTOR3((pt.x-(mScrollWidth/2)) / 100.0f,(pt.y - (mScrollHeight / 2)) / 100.0f * -1,0.0f);
+			lineBegin = D3DXVECTOR3(pt.x, pt.y, 0.0f);
 			clickState = eClickState::eBegin;
 		case eClickState::eBegin:
-			lineEnd = D3DXVECTOR3((pt.x - (mScrollWidth / 2)) / 100.0f, (pt.y - (mScrollHeight / 2)) / 100.0f * -1, 0.0f);
+			lineEnd = D3DXVECTOR3(pt.x, pt.y, 0.0f);
 			break;
 		default:
 			break;
@@ -333,7 +375,7 @@ void CGameFrame::Update()
 		/*
 		if (clickState == eClickState::eBegin)
 		{
-			lineEnd = 
+			lineEnd =
 		}
 		*/
 		clickState = eClickState::eNon;
@@ -342,14 +384,13 @@ void CGameFrame::Update()
 	player.mAcceleVector.y += gravity;
 
 	const auto & playerPos = player.mSpriteObject.mPos;
-	
 
 	if (player.mSpriteObject.mFlg)
 	{
 		//敵と自機の当たり判定.
 		for (const auto enemy : mEnemyList)
 		{
-			const auto result = RectCollision(D3DXVECTOR2(playerPos.x, playerPos.y), D3DXVECTOR2(player.mAcceleVector.x, player.mAcceleVector.y)
+			const auto result = Collision::Rect(D3DXVECTOR2(playerPos.x, playerPos.y), D3DXVECTOR2(player.mAcceleVector.x, player.mAcceleVector.y)
 				, D3DXVECTOR3(32.0f, 32.0f, 32.0f), enemy->GetPosition(), enemy->GetCenterPoint());
 			switch (result)
 			{
@@ -357,12 +398,12 @@ void CGameFrame::Update()
 			case eHitDirection::eNone:
 				break;
 			case eHitDirection::eUp:
-				if(player.mAcceleVector.y > 0.0f )
+				if (player.mAcceleVector.y > 0.0f)
 				{
 					printf("\nenemy break\n");
 					player.mAcceleVector.y = -10.f;
 					delete(enemy);
-					auto result = std::remove(mEnemyList.begin(), mEnemyList.end() , enemy);
+					auto result = std::remove(mEnemyList.begin(), mEnemyList.end(), enemy);
 					mEnemyList.erase(result);
 					printf("moveVector.y = %.3f ", player.mAcceleVector.y);
 				}
@@ -389,37 +430,21 @@ void CGameFrame::Update()
 	//マップチップ配置の中から自分がどこにいるか判定する.
 	const auto startRow = playerPos.y / mapChipHeight;
 	const auto startColumn = playerPos.x / mapChipWidth;
-	for (int row = startRow - hitRange; row < startRow + hitRange; row++)
+	/*for (int row = startRow - hitRange; row < startRow + hitRange; row++)
 	{
 		for (int column = startColumn - hitRange; column < startColumn + hitRange; column++)
+		{*/
+	for (int row = 0; row < mapChipRow; row++)
+	{
+		for (int column = 0; column < mapChipColumn; column++)
 		{
-			if (mapChipList[row][column]->mType != eChipType::eWall) {continue; }
+			if (row >= mapChipRow || column >= mapChipColumn) { continue; }
+			if (mapChipList[row][column]->mType != eChipType::eWall) { continue; }
 
-			auto & chipPos = mapChipList[row][column]->mSpriteObject.mPos;
+			auto chipPos = mapChipList[row][column]->mSpriteObject.mPos;
+			chipPos.x += CameraX;
+			chipPos.y += CameraY;
 
-			//キャラのX座標がマップチップのX座標の中に入っているかチェック通ったら上下判定に入る.
-			if (chipPos.x < playerPos.x + (mapChipWidth / 2)
-				&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
-			{
-				//上判定.
-				//下辺だけの判定だとターゲットの下にいるときも判定してしまうので上辺がターゲットの上辺より上にいるかも確認する.
-				if (nextY + (mapChipHeight / 2) > chipPos.y
-					&& nextY - (mapChipHeight / 2)< chipPos.y)
-				{
-					player.mAcceleVector.y = 0;
-					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
-					player.mJumpFlg = true;
-				}
-				//下判定.
-				//上辺だけの判定だとターゲットの上にいるときも判定してしまうので下辺がターゲットの下辺より上いるかも確認する.
-				else if (nextY - (mapChipHeight / 2) < chipPos.y + mapChipHeight
-					&& nextY + (mapChipHeight / 2)> chipPos.y + mapChipHeight)
-				{
-
-					player.mAcceleVector.y = 0;
-					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipHeight / 2);
-				}
-			}
 
 			//キャラのY座標がマップチップのY座標の中に入っているかチェック通ったら左右判定に入る.
 			if (chipPos.y < playerPos.y + (mapChipHeight / 2)
@@ -440,21 +465,68 @@ void CGameFrame::Update()
 					player.mSpriteObject.mPos.x = chipPos.x + mapChipWidth + (mapChipWidth / 2);
 				}
 			}
+
+			//キャラのX座標がマップチップのX座標の中に入っているかチェック通ったら上下判定に入る.
+			if (chipPos.x < playerPos.x + (mapChipWidth / 2)
+				&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
+			{
+				//上判定.
+				//下辺だけの判定だとターゲットの下にいるときも判定してしまうので上辺がターゲットの上辺より上にいるかも確認する.
+				if (nextY + (mapChipHeight / 2) > chipPos.y
+					&& nextY - (mapChipHeight / 2) < chipPos.y)
+				{
+					player.mAcceleVector.y = 0;
+					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
+					player.mJumpFlg = true;
+				}
+				//下判定.
+				//上辺だけの判定だとターゲットの上にいるときも判定してしまうので下辺がターゲットの下辺より上いるかも確認する.
+				else if (nextY - (mapChipHeight / 2) < chipPos.y + mapChipHeight
+					&& nextY + (mapChipHeight / 2) > chipPos.y + mapChipHeight)
+				{
+
+					player.mAcceleVector.y = 0;
+					player.mSpriteObject.mPos.y = chipPos.y + mapChipHeight + (mapChipHeight / 2);
+				}
+			}
 		}
 	}
 
-	player.mSpriteObject.mPos.y += player.mAcceleVector.y;
+	bool isMove = true;
+
+	if (moveRect.bottom < player.mSpriteObject.mPos.y + player.mAcceleVector.y + 32)
+	{
+		CameraY -= player.mAcceleVector.y;
+		isMove = false;
+	}
+	else
+	{
+		
+	}
+
+	if (moveRect.top > player.mSpriteObject.mPos.y + player.mAcceleVector.y - 32)
+	{
+		CameraY -= player.mAcceleVector.y;
+		isMove = false;
+
+	}
+	else
+	{
+	}
+	if( isMove )
+	{
+		player.mSpriteObject.mPos.y += player.mAcceleVector.y;
+	}
 	player.mSpriteObject.mPos.x += player.mAcceleVector.x;
 
 	for (auto * enemy : mEnemyList)
 	{
-		enemy->Update(mapChipList);
+		//enemy->Update(mapChipList);
 	}
 
 	mpFlyEnemy->Update();
 
-	LineCollision();
-	SphereUpdate();
+	//SphereUpdate();
 }
 
 void CGameFrame::LateUpdate()
@@ -462,6 +534,15 @@ void CGameFrame::LateUpdate()
 	D3DXMatrixTranslation(&player.mTransMatrix, player.mSpriteObject.mPos.x, player.mSpriteObject.mPos.y, player.mSpriteObject.mPos.z);
 	D3DXMatrixScaling(&player.mScaleMatrix, player.mScaleVector.x, player.mScaleVector.y, player.mScaleVector.z);
 	player.mSpriteObject.mMatrix = player.mScaleMatrix * player.mTransMatrix;
+
+
+	for (const auto & list : mapChipList)
+	{
+		for (auto * mapChip : list)
+		{
+			D3DXMatrixTranslation(&mapChip->mSpriteObject.mMatrix, mapChip->mSpriteObject.mPos.x + CameraX, mapChip->mSpriteObject.mPos.y + CameraY, mapChip->mSpriteObject.mPos.z);
+		}
+	}
 
 	for (auto * enemy : mEnemyList)
 	{
@@ -521,12 +602,13 @@ void CGameFrame::Draw2D()
 
 	for (const auto & list : mapChipList)
 	{
-		for (const auto * mapChip : list)
+		for (auto * mapChip : list)
 		{
 			lpSprite->SetTransform(&mapChip->mSpriteObject.mMatrix);
-			//lpSprite->Draw(mapChip->mSpriteObject.mpTex, &mapChip->mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+			lpSprite->Draw(mapChip->mSpriteObject.mpTex, &mapChip->mSpriteObject.mRect, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
 		}
 	}
+
 	/*
 	for (int row = 0; row < mapChipRow; row++)
 	{
@@ -545,7 +627,7 @@ void CGameFrame::Draw2D()
 
 	mpFlyEnemy->Draw(lpSprite);
 
-	if(player.mSpriteObject.mFlg )
+	if (player.mSpriteObject.mFlg)
 	{
 		lpSprite->SetTransform(&player.mSpriteObject.mMatrix);
 		lpSprite->Draw(player.mSpriteObject.mpTex, &player.mSpriteObject.mRect, &D3DXVECTOR3(32.0f, 32.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
@@ -553,15 +635,18 @@ void CGameFrame::Draw2D()
 
 	// 描画終了
 	lpSprite->End();
+	D3DXVECTOR2 boxBeginPos(moveRect.left, moveRect.top);
+	D3DXVECTOR2 boxEndPos(moveRect.right,moveRect.bottom);
+	Primitive::Draw::D2::Box(mpD3DDevice,boxBeginPos,boxEndPos,false,Color::Perple);
 }
 
 void CGameFrame::Draw3D()
 {
 	//Primitive::Draw::Triangle(mpD3DDevice, D3DXVECTOR3(0.0f, 0.0f,0.0f), D3DXVECTOR3(0.5f, -0.5f,0.0f), D3DXVECTOR3(-0.5f,-0.5f, 0.0f), Color::Black);
 	//Primitive::Draw::Polygon(mpD3DDevice,12, spherePos,0.5f,0,true);
-	//Primitive::Draw::Rect(mpD3DDevice,0.0f,0.0f,2.0f,1.0f,90.0f,Color::Green);
-	Primitive::Draw::Line(mpD3DDevice, spherePos, spherePos + (moveVector*10));
-	Primitive::Draw::Line(mpD3DDevice, lineBegin,lineEnd);
+	//Primitive::Draw::Rect(mpD3DDevice,0.0f,0.0f,2.0f,1.0f,90.0f,Color::Green);]	tSegment target(D3DXVECTOR2(lineBegin.x, lineBegin.y), D3DXVECTOR2(lineEnd.x, lineEnd.y));
+	Primitive::Draw::D2::Line(mpD3DDevice, D3DXVECTOR2(spherePos.x, spherePos.y), D3DXVECTOR2(spherePos.x + moveVector.x, spherePos.y + moveVector.y));
+	Primitive::Draw::D2::Line(mpD3DDevice, D3DXVECTOR2(lineBegin.x, lineBegin.y), D3DXVECTOR2(lineEnd.x, lineEnd.y));
 }
 
 
@@ -619,7 +704,7 @@ bool CGameFrame::CreateDirectX9()
 {
 	// Direct3D オブジェクトを作成
 	mpD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if( mpD3D == nullptr )
+	if (mpD3D == nullptr)
 	{
 		// オブジェクト作成失敗
 		MessageBox(NULL, "Direct3D の作成に失敗しました。", "ERROR", MB_OK | MB_ICONSTOP);
