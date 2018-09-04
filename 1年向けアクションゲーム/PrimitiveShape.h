@@ -5,13 +5,14 @@
 
 namespace Color
 {
-	DWORD White		= D3DCOLOR_ARGB(255, 255, 255, 255);
-	DWORD Black		= D3DCOLOR_ARGB(255, 0, 0, 0);
-	DWORD Red		= D3DCOLOR_ARGB(255, 255, 0, 0);
-	DWORD Green		= D3DCOLOR_ARGB(255, 0, 255, 0);
-	DWORD Blue		= D3DCOLOR_ARGB(255, 0, 0, 255);
-	DWORD Perple	= D3DCOLOR_ARGB(255,127,17,132);
+	static const DWORD White		= D3DCOLOR_ARGB(255, 255, 255, 255);
+	static const DWORD Black		= D3DCOLOR_ARGB(255, 0, 0, 0);
+	static const DWORD Red			= D3DCOLOR_ARGB(255, 255, 0, 0);
+	static const DWORD Green		= D3DCOLOR_ARGB(255, 0, 255, 0);
+	static const DWORD Blue			= D3DCOLOR_ARGB(255, 0, 0, 255);
+	static const DWORD Perple		= D3DCOLOR_ARGB(255,127,17,132);
 }
+
 
 namespace Primitive
 {
@@ -23,8 +24,59 @@ namespace Primitive
 		D3DCOLOR	mColor;
 	};
 
+	struct Vertex2D//struct Vertex2DŒ^ 
+	{
+		//          «í‚É0
+		float x, y, z, rhw;//rhwí‚É‚P
+		D3DCOLOR color;
+	};
+
 	namespace Draw
 	{
+		namespace D2
+		{
+			void Line(const LPDIRECT3DDEVICE9 apD3dDevice , const D3DXVECTOR2 & aBegin , const D3DXVECTOR2 & aEnd , const D3DCOLOR & aColor = D3DCOLOR_ARGB(255 ,0, 0, 0))
+			{
+				struct Vertex2D vertex[] = {
+					{ aBegin.x,aBegin.y,0.0f,1.0f,aColor },
+					{ aEnd.x,aEnd.y,0.0f,1.0f,aColor }
+				};
+				apD3dDevice->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+				apD3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, 1, vertex, sizeof(Vertex2D));
+
+				apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+			}
+
+			void Box(const LPDIRECT3DDEVICE9 apD3dDevice, const D3DXVECTOR2 & aPos, const D3DXVECTOR2 & aLength, const bool aPaintFlg, const D3DCOLOR & aColor)
+			{
+				apD3dDevice->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+				if (aPaintFlg == true) {
+					struct Vertex2D Vertex[] = {
+						{ aPos.x,aPos.y,0.0f,1.0f,aColor },
+					{ aPos.x,aLength.y,0.0f,1.0f,aColor },
+					{ aLength.x,aPos.y,0.0f,1.0f,aColor },
+					{ aLength.x,aLength.y,0.0f,1.0f,aColor },
+					};
+
+					apD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, Vertex, sizeof(Vertex2D));
+
+				}
+				else {
+					struct Vertex2D Vertex[] = {
+						{ aPos.x,aPos.y,0.0f,1.0f,aColor },
+					{ aPos.x,aLength.y,0.0f,1.0f,aColor },
+					{ aLength.x,aLength.y,0.0f,1.0f,aColor },
+					{ aLength.x,aPos.y,0.0f,1.0f,aColor },
+					{ aPos.x,aPos.y,0.0f,1.0f,aColor }
+					};
+					apD3dDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, 4, Vertex, sizeof(Vertex2D));
+				}
+
+				apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+			}
+		}
 		void Triangle( const LPDIRECT3DDEVICE9 apD3dDevice ,const D3DXVECTOR3 & aPos1 , const D3DXVECTOR3 & aPos2 , const D3DXVECTOR3 & aPos3 , const D3DCOLOR & aColor)
 		{
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
