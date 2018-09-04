@@ -287,7 +287,9 @@ void CGameFrame::Update()
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		if (moveRect.right < player.mSpriteObject.mPos.x + player.mAcceleVector.x + speedX + 32)
+		int listSize = mapChipList.at(0).size();
+		int moveArea = mScrollWidth - mapChipWidth * listSize;
+		if (moveRect.right < player.mSpriteObject.mPos.x + speedX + 32 && CameraX > moveArea)
 		{
 			CameraX -= speedX;
 		}
@@ -300,7 +302,7 @@ void CGameFrame::Update()
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 	{
-		if (moveRect.left > player.mSpriteObject.mPos.x - ( player.mAcceleVector.x + speedX ) - 32)
+		if (moveRect.left > player.mSpriteObject.mPos.x - speedX - 32 && CameraX < 0.0f )
 		{
 			CameraX += speedX;
 		}
@@ -323,7 +325,7 @@ void CGameFrame::Update()
 	}
 	*/
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)//&& player.mJumpFlg)
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && player.mJumpFlg)
 	{
 		//player.mSpriteObject.mPos.y -= 3.0f;
 		player.mAcceleVector.y = -20.0f;
@@ -332,7 +334,6 @@ void CGameFrame::Update()
 
 	if (GetAsyncKeyState('R') & 0x8000)
 	{
-		/*
 		LoadMapChipFile();
 		player.mSpriteObject.mFlg = true;
 		//if( mEnemyList.empty() )
@@ -348,8 +349,6 @@ void CGameFrame::Update()
 			enemy->SetMoveState(CEnemy::eMoveState::eRight);
 			enemy->SetMoveVector(D3DXVECTOR2(1.0f, 0.0f));
 		}
-		*/
-		spherePos = D3DXVECTOR3(400.0f, 100.0f, 0.0f);
 	}
 
 	POINT pt;
@@ -494,14 +493,10 @@ void CGameFrame::Update()
 
 	bool isMove = true;
 
-	if (moveRect.bottom < player.mSpriteObject.mPos.y + player.mAcceleVector.y + 32)
+	if (moveRect.bottom < player.mSpriteObject.mPos.y + player.mAcceleVector.y + 32 && CameraY > 0.0f )
 	{
 		CameraY -= player.mAcceleVector.y;
 		isMove = false;
-	}
-	else
-	{
-		
 	}
 
 	if (moveRect.top > player.mSpriteObject.mPos.y + player.mAcceleVector.y - 32)
@@ -510,9 +505,7 @@ void CGameFrame::Update()
 		isMove = false;
 
 	}
-	else
-	{
-	}
+
 	if( isMove )
 	{
 		player.mSpriteObject.mPos.y += player.mAcceleVector.y;
@@ -521,7 +514,7 @@ void CGameFrame::Update()
 
 	for (auto * enemy : mEnemyList)
 	{
-		//enemy->Update(mapChipList);
+		enemy->Update(mapChipList);
 	}
 
 	mpFlyEnemy->Update();
