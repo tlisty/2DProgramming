@@ -80,11 +80,34 @@ std::string outputString;
 
 //デバッグようライン描画.
 LPD3DXLINE  pLine;
-DebugRectLine rectLine;
+std::vector< DebugRectLine * > rectLineList;
+std::vector< std::vector< DebugRectLine* > > rectBlockList;
+DebugRectLine rectPlayer;
+RECT rectPlayerPos;
+const LONG rectLength = 50;
+
+const LONG groundY = 600;
+D3DXVECTOR2 playerAddPos(0,3);
+bool jumpFlg = false;
 
 POINT point;
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
+
+const bool isHitRect(const RECT & aRect, const RECT & bRect)
+{
+	const auto result = aRect.left < bRect.right && bRect.left < aRect.right && aRect.top < bRect.bottom && bRect.top < aRect.bottom;
+	return result;
+}
+
+//行列に確定させる更新処理.
+void LateUpdate()
+{
+	rectPlayer.SetRect(rectPlayerPos);
+	// 行列作成
+	D3DXMatrixTranslation(&backMat, 0.0f, backY, 0.0f);
+	D3DXMatrixTranslation(&backMat2, 0.0f, backY - 720, 0.0f);
+}
 
 // 更新処理
 void Update(void)
@@ -95,10 +118,123 @@ void Update(void)
 	{
 		backY -= 720;
 	}
-	// 行列作成
-	D3DXMatrixTranslation(&backMat, 0.0f, backY, 0.0f);
-	D3DXMatrixTranslation(&backMat2, 0.0f, backY-720, 0.0f);
+
+	playerAddPos.x = 0.F;
 	
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	{
+		playerAddPos.x = 3.F;
+	}
+
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+	{
+		playerAddPos.x = -3.F;
+	}
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000 && jumpFlg == true)
+	{
+		jumpFlg = false;
+		playerAddPos.y = -12.F;
+	}
+
+	if (jumpFlg == false)
+	{
+		playerAddPos.y += 0.9f;
+	}
+	else
+	{
+		playerAddPos.y = 0;
+	}
+	for (const auto list : rectBlockList)
+	{
+		for (const auto block : list)
+		{
+			if (block == nullptr) { continue; }
+			const auto & blockRect = block->GetRect();
+
+			if (rectPlayerPos.right > blockRect.left && blockRect.right > rectPlayerPos.left)
+			{
+				//上側判定.
+				if (blockRect.bottom > rectPlayerPos.top + playerAddPos.y && rectPlayerPos.top > blockRect.top)
+				{
+					playerAddPos.y = blockRect.bottom - (rectPlayerPos.top + playerAddPos.y);
+
+				}
+				//下側判定.
+				if (rectPlayerPos.bottom + playerAddPos.y > blockRect.top && blockRect.bottom > rectPlayerPos.bottom)
+				{
+					playerAddPos.y = blockRect.top - rectPlayerPos.bottom;
+					jumpFlg = true;
+				}
+			}
+
+			if (rectPlayerPos.bottom > blockRect.top && blockRect.bottom > rectPlayerPos.top)
+			{
+				//左側判定.
+				if (blockRect.right > rectPlayerPos.left + playerAddPos.x && rectPlayerPos.left > blockRect.left)
+				{
+					playerAddPos.x = blockRect.right - (rectPlayerPos.left + playerAddPos.x);
+				}
+				//右側判定.
+				if (rectPlayerPos.right + playerAddPos.x > blockRect.left && blockRect.right > rectPlayerPos.right)
+				{
+					playerAddPos.x = blockRect.left - (rectPlayerPos.right + playerAddPos.x);
+				}
+			}
+			/*
+			const auto isHit = isHitRect(rectPlayerPos, blockRect);
+			if (isHit)
+			{
+				if (playerAddPos.y < 0  && rectPlayerPos.top < blockRect.bottom)
+				{
+					rectPlayerPos.bottom = blockRect.bottom + rectLength;
+					rectPlayerPos.top = blockRect.bottom;
+					playerAddPos.y = 0;
+				}
+				else if(playerAddPos.y > 0 && rectPlayerPos.bottom > blockRect.top)
+				{
+					rectPlayerPos.bottom = blockRect.top ;
+					rectPlayerPos.top = blockRect.top - rectLength;
+					playerAddPos.y = 0;
+					jumpFlg = true;
+				}
+				
+				
+				if (playerAddPos.x < 0 && rectPlayerPos.left < blockRect.right)
+				{
+					rectPlayerPos.right = blockRect.right + rectLength;
+					rectPlayerPos.left = blockRect.right;
+					playerAddPos.x = 0;
+				}
+				else if(playerAddPos.x > 0 && rectPlayerPos.right > blockRect.left)
+				{
+					rectPlayerPos.right = blockRect.left;
+					rectPlayerPos.left = blockRect.left - rectLength; 
+					playerAddPos.x = 0;
+				}
+				rectPlayer.SetRect(rectPlayerPos);
+				//playerAddPos = D3DXVECTOR2(0, 0);
+			}
+			*/
+		}
+	}
+
+	rectPlayerPos.left += playerAddPos.x;
+	rectPlayerPos.right += playerAddPos.x;
+	rectPlayerPos.top += playerAddPos.y;
+	rectPlayerPos.bottom += playerAddPos.y;
+
+	if (groundY > rectPlayerPos.bottom + playerAddPos.y)
+	{
+		rectPlayerPos.top += playerAddPos.y;
+		rectPlayerPos.bottom += playerAddPos.y;
+	}
+	else
+	{
+		rectPlayerPos.top = groundY - 50;
+		rectPlayerPos.bottom = groundY;
+		jumpFlg = true;
+	}
 }
 
 // 3D描画
@@ -127,7 +263,19 @@ void Render2D(void)
 	// 描画開始
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
-	rectLine.Draw();
+	for( const auto & rectLine : rectLineList )
+	{
+		rectLine->Draw();
+	}
+	for( const auto rectList : rectBlockList )
+	{
+		for (const auto & rect : rectList)
+		{
+			if (rect == nullptr) { continue; }
+			rect->Draw();
+		}
+	}
+	rectPlayer.Draw();
 	
 	/*
 	/////  背景
@@ -175,7 +323,7 @@ void DrawFrame(void)
 
 	// 更新処理
 	Update();
-
+	LateUpdate();
 
 	// 描画開始
 	lpD3DDevice->BeginScene();
@@ -397,6 +545,7 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 
 	// ゲームに関する初期化処理 ---------------------------
+
 	// 背景
 	LoadText(&backTex, "back.png", 1280, 720, NULL);	// 背景
 
@@ -414,12 +563,41 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 
 	//Lineさくせい
 	D3DXCreateLine(lpD3DDevice, &pLine);
-	rectLine.Initialize(lpD3DDevice);
-	const LONG rectLength = 50;
-	RECT startRect = { 300,300,350,350 };
+	rectPlayer.Initialize(lpD3DDevice);
+
+
+	const LONG playerX = 100;
+	const LONG playerY = 200;
+	rectPlayerPos = { playerX , playerY , playerX + rectLength , playerY + rectLength };
+	rectPlayer.SetRect(rectPlayerPos);
 	for (int index = 0; index < 30; index++)
 	{
-		rectLine.AddRect({ 0 + ( rectLength * index ),600,50 + (rectLength * index),650 });
+		DebugRectLine * rectLine = new DebugRectLine();
+		rectLine->Initialize(lpD3DDevice);
+		RECT startRect = { 0 + (rectLength * index),600,50 + (rectLength * index),650 };
+		rectLine->SetRect(startRect);
+		rectLineList.push_back( rectLine );
+	}
+
+	srand(time(0));
+	for (int height = 0; height < 3; height++)
+	{
+		std::vector< DebugRectLine * > list;
+		for (int width = 0; width < 10; width++)
+		{
+			DebugRectLine * result = nullptr;
+			auto isCreate = ( (rand() % 2) == 0 );
+			if (isCreate)
+			{
+				result = new DebugRectLine();
+				result->Initialize(lpD3DDevice);
+				RECT startRect = { 200 + (rectLength * width),400 + ( rectLength * height ),250 + (rectLength * width),450 + (rectLength * height) };
+				result->SetRect(startRect);
+				list.push_back(result);
+			}
+			list.push_back(result);
+		}
+		rectBlockList.push_back(list);
 	}
 	//Init();
 
