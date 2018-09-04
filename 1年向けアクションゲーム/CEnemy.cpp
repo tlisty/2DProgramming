@@ -82,8 +82,7 @@ void CEnemy::Update(const std::vector<std::vector<tChipObject*>> & aChipObjects)
 			}
 
 			auto & chipPos = aChipObjects[row][column]->mSpriteObject.mPos;
-			
-			const auto directon = RectCollision(mPosition,mMoveVector,mCenterPoint,D3DXVECTOR2(chipPos.x, chipPos.y),D3DXVECTOR3(0.0f,0.0f,0.0f));
+			const auto directon = Collision::Rect(mPosition,mMoveVector,mCenterPoint,D3DXVECTOR2(chipPos.x, chipPos.y),D3DXVECTOR3(0.0f,0.0f,0.0f));
 			switch (directon)
 			{
 			case eHitDirection::eUp:
