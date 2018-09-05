@@ -1,8 +1,8 @@
-/*
-		Žö‹Æ‚ÅŽg‚¤ƒAƒNƒVƒ‡ƒ“ƒQ[ƒ€ƒx[ƒX.
-		64–64‚Ìƒ}ƒbƒvƒ`ƒbƒv‚ðŽg‚¤.
-		‰¡‚Í1280‚Ì20ƒ}ƒX.
-		c‚Í768‚Ì12ƒ}ƒX.
+ï»¿/*
+		æŽˆæ¥­ã§ä½¿ã†ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ãƒ ãƒ™ãƒ¼ã‚¹.
+		64ï¼Š64ã®ãƒžãƒƒãƒ—ãƒãƒƒãƒ—ã‚’ä½¿ã†.
+		æ¨ªã¯1280ã®20ãƒžã‚¹.
+		ç¸¦ã¯768ã®12ãƒžã‚¹.
 */
 
 #include<windows.h>
@@ -21,7 +21,7 @@
 
 CGameFrame * pGameFrame = nullptr;
 
-bool gameFullScreen;	// ƒtƒ‹ƒXƒNƒŠ[ƒ“itrue,false)
+bool gameFullScreen;	// ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ï¼ˆtrue,false)
 
 #define	FVF_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 const bool isHitRect(const RECT & aRect, const RECT & bRect)
@@ -53,12 +53,12 @@ int WINAPI WinMain(HINSTANCE hInst,HINSTANCE hPrev,
 				   LPSTR lpszCmdParam,int nCmdshow)
 {
 	MSG msg;
-	// •W€“üo—Í‚ÉŠ„‚è“–‚Ä‚é
+	// æ¨™æº–å…¥å‡ºåŠ›ã«å‰²ã‚Šå½“ã¦ã‚‹
 	FILE* fp = NULL;
 
-	// ƒRƒ“ƒ\[ƒ‹‚ðì¬‚·‚é
+	// ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã‚’ä½œæˆã™ã‚‹
 	AllocConsole();
-	// Œ»Ý‚ÌƒR[ƒh
+	// ç¾åœ¨ã®ã‚³ãƒ¼ãƒ‰
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 	freopen_s(&fp, "CONIN$", "r", stdin);
 

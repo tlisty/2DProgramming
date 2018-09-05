@@ -1,6 +1,7 @@
-#include "CFlyEnemy.h"
+ï»¿#include "CFlyEnemy.h"
 #include<cassert>
 #include<cmath>
+
 
 CFlyEnemy::CFlyEnemy()
 	: mpTexture(nullptr)
@@ -22,8 +23,8 @@ CFlyEnemy::~CFlyEnemy()
 
 CFlyEnemy & CFlyEnemy::Create()
 {
-	//std::nothrow‚Å—áŠO‚ğ”­¶‚³‚¹‚È‚¢‚æ‚¤‚É‚·‚é.
-	//ƒƒ‚ƒŠŠm•Û‚É¸”s‚µ‚½ê‡‚Ínullptr‚ğ•Ô‚·.
+	//std::nothrowã§ä¾‹å¤–ã‚’ç™ºç”Ÿã•ã›ãªã„ã‚ˆã†ã«ã™ã‚‹.
+	//ãƒ¡ãƒ¢ãƒªç¢ºä¿ã«å¤±æ•—ã—ãŸå ´åˆã¯nullptrã‚’è¿”ã™.
 	auto * result = new(std::nothrow)CFlyEnemy;
 	assert(result != nullptr, "not create CFlyEnemy");
 	return *result;

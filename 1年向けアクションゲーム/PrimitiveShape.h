@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<d3dx9.h>
 #include<vector>
 #include<functional>
@@ -24,10 +24,10 @@ namespace Primitive
 		D3DCOLOR	mColor;
 	};
 
-	struct Vertex2D//struct Vertex2DŒ^ 
+	struct Vertex2D//struct Vertex2Dåž‹ 
 	{
-		//          «í‚É0
-		float x, y, z, rhw;//rhwí‚É‚P
+		//          â†“å¸¸ã«0
+		float x, y, z, rhw;//rhwå¸¸ã«ï¼‘
 		D3DCOLOR color;
 	};
 
@@ -92,7 +92,7 @@ namespace Primitive
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 		}
 
-		//–¢Š®¬iŠp“x‚ð‚Â‚¯‚éƒoƒO‚éj
+		//æœªå®Œæˆï¼ˆè§’åº¦ã‚’ã¤ã‘ã‚‹ãƒã‚°ã‚‹ï¼‰
 		void Rect(const LPDIRECT3DDEVICE9 apD3dDevice, const float aX , const float aY , const float aWidth , const float aHeight , const float aDegree, const D3DCOLOR & aColor)
 		{
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
@@ -111,7 +111,7 @@ namespace Primitive
 				, 2
 				, vertex
 				, sizeof(tVertex));
-			//Žg‚Á‚½Œã‚ÍŒ³’Ê‚è‚É.
+			//ä½¿ã£ãŸå¾Œã¯å…ƒé€šã‚Šã«.
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 			D3DXMatrixIdentity(&mRot);
 			apD3dDevice->SetTransform(D3DTS_WORLD, &mRot);
@@ -128,7 +128,7 @@ namespace Primitive
 				, 1
 				, vertex
 				, sizeof(tVertex));
-			//Žg‚Á‚½Œã‚ÍŒ³’Ê‚è‚É.
+			//ä½¿ã£ãŸå¾Œã¯å…ƒé€šã‚Šã«.
 			apD3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 		}
 

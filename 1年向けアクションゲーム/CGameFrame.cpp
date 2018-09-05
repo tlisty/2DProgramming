@@ -1,4 +1,4 @@
-#include<algorithm>
+ï»¿#include<algorithm>
 #include<vector>
 #include<random>
 
@@ -10,7 +10,7 @@
 #include "PrimitiveShape.h"
 
 
-// ’¸“_ƒtƒH[ƒ}ƒbƒg‚Ì’è‹`
+// é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã®å®šç¾©
 struct VERTEX
 {
 	D3DXVECTOR3 Pos;
@@ -18,7 +18,7 @@ struct VERTEX
 	D3DXVECTOR2 Tex;
 };
 
-//’è”.
+//å®šæ•°.
 const int mapChipWidth = 64;
 const int mapChipHeight = 64;
 const int mapChipRow = 12;
@@ -39,15 +39,15 @@ D3DXVECTOR3 lineEnd(500.0f, 500.0f, 0.0f);
 std::vector<int> intList;
 std::vector<CEnemy> testEnemyList;
 
-////  ƒOƒ[ƒoƒ‹•Ï”éŒ¾
+////  ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°å®£è¨€
 
-LPD3DXSPRITE	lpSprite;	// ƒXƒvƒ‰ƒCƒg
-LPD3DXFONT		lpFont;		// ƒtƒHƒ“ƒg
+LPD3DXSPRITE	lpSprite;	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
+LPD3DXFONT		lpFont;		// ãƒ•ã‚©ãƒ³ãƒˆ
 
 float CameraX;
 float CameraY;
 
-//ƒx[ƒXƒeƒNƒXƒ`ƒƒ.
+//ãƒ™ãƒ¼ã‚¹ãƒ†ã‚¯ã‚¹ãƒãƒ£.
 LPDIRECT3DTEXTURE9 baseChipTex, baseCharaTex;
 
 struct tPlayerObject
@@ -188,7 +188,7 @@ bool LoadMapChipFile()
 	}
 	else
 	{
-		_ASSERT_EXPR(false, L"ƒtƒ@ƒCƒ‹“Ç‚İ‚İ¸”s");
+		_ASSERT_EXPR(false, L"ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿å¤±æ•—");
 		return false;
 	}
 	fclose(fp);
@@ -237,14 +237,14 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 	assert(mpHwnd != nullptr, "not create mpHwnd");
 	CreateDirectX9();
 
-	LoadText(&baseChipTex, "Resorces/MapChip/chip01.png", 320, 320, NULL);	// ƒ}ƒbƒvƒ`ƒbƒv.
-	LoadText(&baseCharaTex, "Resorces/Chara/chara.png", 64, 64, NULL);		// ©‹@.
+	LoadText(&baseChipTex, "Resorces/MapChip/chip01.png", 320, 320, NULL);	// ãƒãƒƒãƒ—ãƒãƒƒãƒ—.
+	LoadText(&baseCharaTex, "Resorces/Chara/chara.png", 64, 64, NULL);		// è‡ªæ©Ÿ.
 
 	LoadMapChipFile();
 
 	srand(timeGetTime());
 
-	// ©‹@.
+	// è‡ªæ©Ÿ.
 	//player = new tSpriteObject();
 	player.mSpriteObject.mRect = { 0 , 0 , 64 , 64 };
 	player.mSpriteObject.mpTex = baseCharaTex;
@@ -252,14 +252,14 @@ bool CGameFrame::Initialize(HINSTANCE aHInst, const int aCmdShow)
 	player.mSpriteObject.mPos = D3DXVECTOR3(200.0f, 300.0f, 0.0f);
 	player.mSpriteObject.mFlg = true;
 
-	// ƒXƒvƒ‰ƒCƒgì¬
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆä½œæˆ
 	D3DXCreateSprite(mpD3DDevice, &lpSprite);
 	lpSprite->OnResetDevice();
 
 	LPDIRECT3DTEXTURE9 enemyTexture;
 	LoadText(&enemyTexture, "Resorces/kuroTenemy.png", 64, 64, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-	//“G¶¬.
+	//æ•µç”Ÿæˆ.
 	auto * enemy = CEnemy::Create();
 	mEnemyList.push_back(enemy);
 	enemy->SetTexture(enemyTexture);
@@ -386,7 +386,7 @@ void CGameFrame::Update()
 
 	if (player.mSpriteObject.mFlg)
 	{
-		//“G‚Æ©‹@‚Ì“–‚½‚è”»’è.
+		//æ•µã¨è‡ªæ©Ÿã®å½“ãŸã‚Šåˆ¤å®š.
 		for (const auto enemy : mEnemyList)
 		{
 			const auto result = Collision::Rect(D3DXVECTOR2(playerPos.x, playerPos.y), D3DXVECTOR2(player.mAcceleVector.x, player.mAcceleVector.y)
@@ -426,7 +426,7 @@ void CGameFrame::Update()
 	const auto nextY = player.mSpriteObject.mPos.y + player.mAcceleVector.y;
 	const auto nextX = player.mSpriteObject.mPos.x + player.mAcceleVector.x;
 
-	//ƒ}ƒbƒvƒ`ƒbƒv”z’u‚Ì’†‚©‚ç©•ª‚ª‚Ç‚±‚É‚¢‚é‚©”»’è‚·‚é.
+	//ãƒãƒƒãƒ—ãƒãƒƒãƒ—é…ç½®ã®ä¸­ã‹ã‚‰è‡ªåˆ†ãŒã©ã“ã«ã„ã‚‹ã‹åˆ¤å®šã™ã‚‹.
 	const auto startRow = playerPos.y / mapChipHeight;
 	const auto startColumn = playerPos.x / mapChipWidth;
 	/*for (int row = startRow - hitRange; row < startRow + hitRange; row++)
@@ -445,18 +445,18 @@ void CGameFrame::Update()
 			chipPos.y += CameraY;
 
 
-			//ƒLƒƒƒ‰‚ÌYÀ•W‚ªƒ}ƒbƒvƒ`ƒbƒv‚ÌYÀ•W‚Ì’†‚É“ü‚Á‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN’Ê‚Á‚½‚ç¶‰E”»’è‚É“ü‚é.
+			//ã‚­ãƒ£ãƒ©ã®Yåº§æ¨™ãŒãƒãƒƒãƒ—ãƒãƒƒãƒ—ã®Yåº§æ¨™ã®ä¸­ã«å…¥ã£ã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯é€šã£ãŸã‚‰å·¦å³åˆ¤å®šã«å…¥ã‚‹.
 			if (chipPos.y < playerPos.y + (mapChipHeight / 2)
 				&& chipPos.y + mapChipHeight > playerPos.y - (mapChipHeight / 2))
 			{
-				//‰E”»’è.
+				//å³åˆ¤å®š.
 				if (nextX + (mapChipWidth / 2) > chipPos.x
 					&& nextX - (mapChipWidth / 2) < chipPos.x)
 				{
 					player.mAcceleVector.x = 0;
 					player.mSpriteObject.mPos.x = chipPos.x - (mapChipWidth / 2);
 				}
-				//¶”»’è.
+				//å·¦åˆ¤å®š.
 				else if (nextX - (mapChipWidth / 2) < chipPos.x + mapChipWidth
 					&& nextX + (mapChipWidth / 2) > chipPos.x + mapChipWidth)
 				{
@@ -465,12 +465,12 @@ void CGameFrame::Update()
 				}
 			}
 
-			//ƒLƒƒƒ‰‚ÌXÀ•W‚ªƒ}ƒbƒvƒ`ƒbƒv‚ÌXÀ•W‚Ì’†‚É“ü‚Á‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN’Ê‚Á‚½‚çã‰º”»’è‚É“ü‚é.
+			//ã‚­ãƒ£ãƒ©ã®Xåº§æ¨™ãŒãƒãƒƒãƒ—ãƒãƒƒãƒ—ã®Xåº§æ¨™ã®ä¸­ã«å…¥ã£ã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯é€šã£ãŸã‚‰ä¸Šä¸‹åˆ¤å®šã«å…¥ã‚‹.
 			if (chipPos.x < playerPos.x + (mapChipWidth / 2)
 				&& chipPos.x + mapChipWidth > playerPos.x - (mapChipWidth / 2))
 			{
-				//ã”»’è.
-				//‰º•Ó‚¾‚¯‚Ì”»’è‚¾‚Æƒ^[ƒQƒbƒg‚Ì‰º‚É‚¢‚é‚Æ‚«‚à”»’è‚µ‚Ä‚µ‚Ü‚¤‚Ì‚Åã•Ó‚ªƒ^[ƒQƒbƒg‚Ìã•Ó‚æ‚èã‚É‚¢‚é‚©‚àŠm”F‚·‚é.
+				//ä¸Šåˆ¤å®š.
+				//ä¸‹è¾ºã ã‘ã®åˆ¤å®šã ã¨ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ä¸‹ã«ã„ã‚‹ã¨ãã‚‚åˆ¤å®šã—ã¦ã—ã¾ã†ã®ã§ä¸Šè¾ºãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ä¸Šè¾ºã‚ˆã‚Šä¸Šã«ã„ã‚‹ã‹ã‚‚ç¢ºèªã™ã‚‹.
 				if (nextY + (mapChipHeight / 2) > chipPos.y
 					&& nextY - (mapChipHeight / 2) < chipPos.y)
 				{
@@ -478,8 +478,8 @@ void CGameFrame::Update()
 					player.mSpriteObject.mPos.y = chipPos.y - (mapChipHeight / 2);
 					player.mJumpFlg = true;
 				}
-				//‰º”»’è.
-				//ã•Ó‚¾‚¯‚Ì”»’è‚¾‚Æƒ^[ƒQƒbƒg‚Ìã‚É‚¢‚é‚Æ‚«‚à”»’è‚µ‚Ä‚µ‚Ü‚¤‚Ì‚Å‰º•Ó‚ªƒ^[ƒQƒbƒg‚Ì‰º•Ó‚æ‚èã‚¢‚é‚©‚àŠm”F‚·‚é.
+				//ä¸‹åˆ¤å®š.
+				//ä¸Šè¾ºã ã‘ã®åˆ¤å®šã ã¨ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ä¸Šã«ã„ã‚‹ã¨ãã‚‚åˆ¤å®šã—ã¦ã—ã¾ã†ã®ã§ä¸‹è¾ºãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ä¸‹è¾ºã‚ˆã‚Šä¸Šã„ã‚‹ã‹ã‚‚ç¢ºèªã™ã‚‹.
 				else if (nextY - (mapChipHeight / 2) < chipPos.y + mapChipHeight
 					&& nextY + (mapChipHeight / 2) > chipPos.y + mapChipHeight)
 				{
@@ -552,44 +552,44 @@ void CGameFrame::Draw()
 
 void CGameFrame::GameLoop()
 {
-	// ƒoƒbƒNƒoƒbƒtƒ@‚Æ Z ƒoƒbƒtƒ@‚ğƒNƒŠƒA
+	// ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã¨ Z ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢
 	mpD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
 
 
 	Update();
 	LateUpdate();
 
-	// •`‰æŠJn
+	// æç”»é–‹å§‹
 	mpD3DDevice->BeginScene();
 
 	D3DXMATRIX mView, mProj;
 
-	// ‹“_s—ñ‚Ìİ’è
+	// è¦–ç‚¹è¡Œåˆ—ã®è¨­å®š
 	D3DXMatrixLookAtLH(&mView,
-		&D3DXVECTOR3(0.0f, 0.0f, -10.0f),	// ƒJƒƒ‰‚ÌˆÊ’u
-		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),	// ƒJƒƒ‰‚Ì‹“_
-		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)	// ƒJƒƒ‰‚Ì“ª‚Ì•ûŒü
+		&D3DXVECTOR3(0.0f, 0.0f, -10.0f),	// ã‚«ãƒ¡ãƒ©ã®ä½ç½®
+		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),	// ã‚«ãƒ¡ãƒ©ã®è¦–ç‚¹
+		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)	// ã‚«ãƒ¡ãƒ©ã®é ­ã®æ–¹å‘
 	);
 
-	// “Š‰es—ñ‚Ìİ’è
+	// æŠ•å½±è¡Œåˆ—ã®è¨­å®š
 	D3DXMatrixPerspectiveFovLH(&mProj, D3DXToRadian(60), (float)mScrollWidth / (float)mScrollHeight, 1.0f, 1000.0f);
 
-	//s—ñİ’è
+	//è¡Œåˆ—è¨­å®š
 	mpD3DDevice->SetTransform(D3DTS_VIEW, &mView);
 	mpD3DDevice->SetTransform(D3DTS_PROJECTION, &mProj);
 
 	Draw();
 
-	// •`‰æI—¹
+	// æç”»çµ‚äº†
 	mpD3DDevice->EndScene();
 
-	// ƒoƒbƒNƒoƒbƒtƒ@‚ğƒvƒ‰ƒCƒ}ƒŠƒoƒbƒtƒ@‚ÉƒRƒs[
+	// ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚’ãƒ—ãƒ©ã‚¤ãƒãƒªãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼
 	mpD3DDevice->Present(NULL, NULL, NULL, NULL);
 }
 
 void CGameFrame::Draw2D()
 {
-	// •`‰æŠJn
+	// æç”»é–‹å§‹
 	lpSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
 
@@ -626,7 +626,7 @@ void CGameFrame::Draw2D()
 		lpSprite->Draw(player.mSpriteObject.mpTex, &player.mSpriteObject.mRect, &D3DXVECTOR3(32.0f, 32.0f, 0.0f), nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
 	}
 
-	// •`‰æI—¹
+	// æç”»çµ‚äº†
 	lpSprite->End();
 	D3DXVECTOR2 boxBeginPos(moveRect.left, moveRect.top);
 	D3DXVECTOR2 boxEndPos(moveRect.right,moveRect.bottom);
@@ -695,105 +695,105 @@ WNDCLASS CGameFrame::CreateWNDCLASS(HINSTANCE aHInst)
 
 bool CGameFrame::CreateDirectX9()
 {
-	// Direct3D ƒIƒuƒWƒFƒNƒg‚ğì¬
+	// Direct3D ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ä½œæˆ
 	mpD3D = Direct3DCreate9(D3D_SDK_VERSION);
 	if (mpD3D == nullptr)
 	{
-		// ƒIƒuƒWƒFƒNƒgì¬¸”s
-		MessageBox(NULL, "Direct3D ‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½B", "ERROR", MB_OK | MB_ICONSTOP);
-		// I—¹‚·‚é
+		// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½œæˆå¤±æ•—
+		MessageBox(NULL, "Direct3D ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚", "ERROR", MB_OK | MB_ICONSTOP);
+		// çµ‚äº†ã™ã‚‹
 		return false;
 	}
 	int adapter;
 
-	// g—p‚·‚éƒAƒ_ƒvƒ^”Ô†
+	// ä½¿ç”¨ã™ã‚‹ã‚¢ãƒ€ãƒ—ã‚¿ç•ªå·
 	adapter = D3DADAPTER_DEFAULT;
 
-	// ƒEƒCƒ“ƒhƒE‚Ìì¬‚ªŠ®—¹‚µ‚½‚Ì‚ÅADirect3D ‚ğ‰Šú‰»‚·‚é
+	// ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®ä½œæˆãŒå®Œäº†ã—ãŸã®ã§ã€Direct3D ã‚’åˆæœŸåŒ–ã™ã‚‹
 	ZeroMemory(&mD3Dpp, sizeof(D3DPRESENT_PARAMETERS));
-	// Direct3D ‰Šú‰»ƒpƒ‰ƒ[ƒ^‚Ìİ’è
+	// Direct3D åˆæœŸåŒ–ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®è¨­å®š
 	if (mIsFullScreen)
 	{
-		// ƒtƒ‹ƒXƒNƒŠ[ƒ“ : ‚Ù‚Æ‚ñ‚Ç‚ÌƒAƒ_ƒvƒ^‚ÅƒTƒ|[ƒg‚³‚ê‚Ä‚¢‚éƒtƒH[ƒ}ƒbƒg‚ğg—p
+		// ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ : ã»ã¨ã‚“ã©ã®ã‚¢ãƒ€ãƒ—ã‚¿ã§ã‚µãƒãƒ¼ãƒˆã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ä½¿ç”¨
 		mD3Dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	}
 	else
 	{
-		// ƒEƒCƒ“ƒhƒE : Œ»İ‚Ì‰æ–Êƒ‚[ƒh‚ğg—p
+		// ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ : ç¾åœ¨ã®ç”»é¢ãƒ¢ãƒ¼ãƒ‰ã‚’ä½¿ç”¨
 		D3DDISPLAYMODE disp;
-		// Œ»İ‚Ì‰æ–Êƒ‚[ƒh‚ğæ“¾
+		// ç¾åœ¨ã®ç”»é¢ãƒ¢ãƒ¼ãƒ‰ã‚’å–å¾—
 		mpD3D->GetAdapterDisplayMode(adapter, &disp);
 		mD3Dpp.BackBufferFormat = disp.Format;
 	}
-	// •\¦—ÌˆæƒTƒCƒY‚Ìİ’è
+	// è¡¨ç¤ºé ˜åŸŸã‚µã‚¤ã‚ºã®è¨­å®š
 	mD3Dpp.BackBufferWidth = mScrollWidth;
 	mD3Dpp.BackBufferHeight = mScrollHeight;
 	mD3Dpp.SwapEffect = D3DSWAPEFFECT_FLIP;
 
 	if (mIsFullScreen == false)
 	{
-		// ƒEƒCƒ“ƒhƒEƒ‚[ƒh
+		// ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒ¢ãƒ¼ãƒ‰
 		mD3Dpp.Windowed = 1;
 	}
 
-	// Z ƒoƒbƒtƒ@‚Ì©“®ì¬
+	// Z ãƒãƒƒãƒ•ã‚¡ã®è‡ªå‹•ä½œæˆ
 	mD3Dpp.EnableAutoDepthStencil = 1;
 	mD3Dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
-	//ÊŞ¯¸ÊŞ¯Ì§‚ğÛ¯¸‰Â”\‚É‚·‚é(GetDC‚à‰Â”\‚É‚È‚é)
+	//ï¾Šï¾ï½¯ï½¸ï¾Šï¾ï½¯ï¾Œï½§ã‚’ï¾›ï½¯ï½¸å¯èƒ½ã«ã™ã‚‹(GetDCã‚‚å¯èƒ½ã«ãªã‚‹)
 	mD3Dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
-	// ƒfƒoƒCƒX‚Ìì¬ - T&L HAL
+	// ãƒ‡ãƒã‚¤ã‚¹ã®ä½œæˆ - T&L HAL
 	if (FAILED(mpD3D->CreateDevice(adapter, D3DDEVTYPE_HAL, mpHwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &mD3Dpp, &mpD3DDevice)))
 	{
-		// ¸”s‚µ‚½‚Ì‚Å HAL ‚Ås
+		// å¤±æ•—ã—ãŸã®ã§ HAL ã§è©¦è¡Œ
 		if (FAILED(mpD3D->CreateDevice(adapter, D3DDEVTYPE_HAL, mpHwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &mD3Dpp, &mpD3DDevice)))
 		{
-			// ¸”s‚µ‚½‚Ì‚Å REF ‚Ås
+			// å¤±æ•—ã—ãŸã®ã§ REF ã§è©¦è¡Œ
 			if (FAILED(mpD3D->CreateDevice(adapter, D3DDEVTYPE_REF, mpHwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &mD3Dpp, &mpD3DDevice)))
 			{
-				// Œ‹‹Ç¸”s‚µ‚½
-				MessageBox(NULL, "DirectX9‚ª‰Šú‰»‚Å‚«‚Ü‚¹‚ñB\n–¢‘Î‰‚Ìƒpƒ\ƒRƒ“‚Æv‚í‚ê‚Ü‚·B", "ERROR", MB_OK | MB_ICONSTOP);
+				// çµå±€å¤±æ•—ã—ãŸ
+				MessageBox(NULL, "DirectX9ãŒåˆæœŸåŒ–ã§ãã¾ã›ã‚“ã€‚\næœªå¯¾å¿œã®ãƒ‘ã‚½ã‚³ãƒ³ã¨æ€ã‚ã‚Œã¾ã™ã€‚", "ERROR", MB_OK | MB_ICONSTOP);
 				mpD3D->Release();
-				// I—¹‚·‚é
+				// çµ‚äº†ã™ã‚‹
 				return 0;
 			}
 		}
 	}
 
-	// ƒŒƒ“ƒ_ƒŠƒ“ƒOEƒXƒe[ƒg‚ğİ’è
-	// Z ƒoƒbƒtƒ@—LŒø‰»->‘OŒãŠÖŒW‚ÌŒvZ‚ğ³Šm‚É‚µ‚Ä‚­‚ê‚é
+	// ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ãƒ»ã‚¹ãƒ†ãƒ¼ãƒˆã‚’è¨­å®š
+	// Z ãƒãƒƒãƒ•ã‚¡æœ‰åŠ¹åŒ–->å‰å¾Œé–¢ä¿‚ã®è¨ˆç®—ã‚’æ­£ç¢ºã«ã—ã¦ãã‚Œã‚‹
 	mpD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	mpD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 
-	// ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒfƒBƒ“ƒO—LŒø‰»
+	// ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‡ã‚£ãƒ³ã‚°æœ‰åŠ¹åŒ–
 	mpD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-	// ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒfƒBƒ“ƒO•û–@‚ğİ’è
+	// ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‡ã‚£ãƒ³ã‚°æ–¹æ³•ã‚’è¨­å®š
 	mpD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	mpD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-	// ƒŒƒ“ƒ_ƒŠƒ“ƒO‚ÌƒAƒ‹ƒtƒ@’l‚ÌŒvZ•û–@‚Ìİ’è
+	// ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°æ™‚ã®ã‚¢ãƒ«ãƒ•ã‚¡å€¤ã®è¨ˆç®—æ–¹æ³•ã®è¨­å®š
 	mpD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-	// ƒeƒNƒXƒ`ƒƒ‚ÌF‚ğg—p
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®è‰²ã‚’ä½¿ç”¨
 	mpD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	// ’¸“_‚ÌF‚ğg—p
+	// é ‚ç‚¹ã®è‰²ã‚’ä½¿ç”¨
 	mpD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
-	// ƒŒƒ“ƒ_ƒŠƒ“ƒO‚ÌF‚ÌŒvZ•û–@‚Ìİ’è
+	// ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°æ™‚ã®è‰²ã®è¨ˆç®—æ–¹æ³•ã®è¨­å®š
 	mpD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 
-	//— –ÊƒJƒŠƒ“ƒO
+	//è£é¢ã‚«ãƒªãƒ³ã‚°
 	mpD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	// ƒtƒBƒ‹ƒ^İ’è
+	// ãƒ•ã‚£ãƒ«ã‚¿è¨­å®š
 	mpD3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 	mpD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 	mpD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 
-	// ƒ‰ƒCƒg
+	// ãƒ©ã‚¤ãƒˆ
 	mpD3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
 	mpD3DDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-	// ’¸“_ƒtƒH[ƒ}ƒbƒg‚Ìİ’è
+	// é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã®è¨­å®š
 	mpD3DDevice->SetFVF(mFvFVertex);
 }

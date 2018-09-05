@@ -1,4 +1,4 @@
-#include "CEnemy.h"
+ï»¿#include "CEnemy.h"
 #include "Collision.h"
 #include<cassert>
 #include"CSpriteObject.h"
@@ -41,8 +41,8 @@ CEnemy::~CEnemy()
 
 CEnemy * CEnemy::Create()
 {
-	//std::nothrow‚Å—áŠO‚ğ”­¶‚³‚¹‚È‚¢‚æ‚¤‚É‚·‚é.
-	//ƒƒ‚ƒŠŠm•Û‚É¸”s‚µ‚½ê‡‚Ínullptr‚ğ•Ô‚·.
+	//std::nothrowã§ä¾‹å¤–ã‚’ç™ºç”Ÿã•ã›ãªã„ã‚ˆã†ã«ã™ã‚‹.
+	//ãƒ¡ãƒ¢ãƒªç¢ºä¿ã«å¤±æ•—ã—ãŸå ´åˆã¯nullptrã‚’è¿”ã™.
 	auto * result = new(std::nothrow)CEnemy;
 	assert(result != nullptr, "not create CEnemy");
 	return result;
@@ -68,7 +68,7 @@ void CEnemy::Update(const std::vector<std::vector<tChipObject*>> & aChipObjects)
 	mMoveVector.y += 1.0f;
 
 	const auto & playerPos = mPosition;
-	//ƒ}ƒbƒvƒ`ƒbƒv”z’u‚Ì’†‚©‚ç©•ª‚ª‚Ç‚±‚É‚¢‚é‚©”»’è‚·‚é.
+	//ãƒãƒƒãƒ—ãƒãƒƒãƒ—é…ç½®ã®ä¸­ã‹ã‚‰è‡ªåˆ†ãŒã©ã“ã«ã„ã‚‹ã‹åˆ¤å®šã™ã‚‹.
 	const auto startRow = playerPos.y / 64;
 	const auto startColumn = playerPos.x / 64;
 

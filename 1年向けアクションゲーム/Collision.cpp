@@ -1,21 +1,21 @@
-#include"Collision.h"
+ï»¿#include"Collision.h"
 
-// 2DƒxƒNƒgƒ‹‚ÌŠOÏ
+// 2Dãƒ™ã‚¯ãƒˆãƒ«ã®å¤–ç©
 const float Collision::D3DXVec2Cross(const D3DXVECTOR2 & v1, const D3DXVECTOR2 & v2) {
 	return v1.x * v2.y - v1.y * v2.x;
 }
 
-// ü•ª‚ÌÕ“Ë
+// ç·šåˆ†ã®è¡çª
  const Collision::SegmentsResult Collision::Segments(
-	tSegment &seg1,          // ü•ª1
-	tSegment &seg2           // ü•ª2
+	tSegment &seg1,          // ç·šåˆ†1
+	tSegment &seg2           // ç·šåˆ†2
 ) {
 	SegmentsResult result(false,D3DXVECTOR2(0.0f,0.0f));
 
 	D3DXVECTOR2 v = seg2.mPosition - seg1.mPosition;
 	float Crs_v1_v2 = D3DXVec2Cross(seg1.mVector, seg2.mVector);
 	if (Crs_v1_v2 == 0.0f) {
-		// •½só‘Ô
+		// å¹³è¡ŒçŠ¶æ…‹
 		return result;
 	}
 
@@ -34,7 +34,7 @@ const float Collision::D3DXVec2Cross(const D3DXVECTOR2 & v1, const D3DXVECTOR2 &
 
 	const float eps = 0.00000f;
 	if (t1 < 0 || t1 > 1 || t2 < 0 || t2 > 1) {
-		// Œğ·‚µ‚Ä‚¢‚È‚¢
+		// äº¤å·®ã—ã¦ã„ãªã„
 		return result;
 	}
 
@@ -47,7 +47,7 @@ const float Collision::D3DXVec2Cross(const D3DXVECTOR2 & v1, const D3DXVECTOR2 &
 const eHitDirection Collision::Rect( const D3DXVECTOR2 & aPos , const D3DXVECTOR2 & aMoveVector , const D3DXVECTOR3 & aCenterPos
                                         , const D3DXVECTOR2 & aTargetPos , const D3DXVECTOR3 & aTargetCenterPos )
 {
-	//TODO:‚ä‚­‚ä‚­‚ÍŠO•”‚É“¦‚ª‚·.
+	//TODO:ã‚†ãã‚†ãã¯å¤–éƒ¨ã«é€ƒãŒã™.
 	const int length = 64;
 
 	const auto nextPos = aPos + aMoveVector;
@@ -55,34 +55,34 @@ const eHitDirection Collision::Rect( const D3DXVECTOR2 & aPos , const D3DXVECTOR
 	const RECT targetRect = { aTargetPos.x - aTargetCenterPos.x , aTargetPos.y - aTargetCenterPos.y , aTargetPos.x + (length - aTargetCenterPos.x) , aTargetPos.y + (length - aTargetCenterPos.y) };
 	const RECT nextRect = { nextPos.x - aCenterPos.x , nextPos.y - aCenterPos.y , nextPos.x + (length - aCenterPos.x) , nextPos.y + (length - aCenterPos.y) };
 
-	//ã‰º”»’è.
+	//ä¸Šä¸‹åˆ¤å®š.
 	if (targetRect.left < rect.right
 		&& targetRect.right > rect.left)
 	{
-		//ã”»’è.
+		//ä¸Šåˆ¤å®š.
 		if (targetRect.top < nextRect.bottom
 			&& targetRect.top > nextRect.top)
 		{
 			return eHitDirection::eUp;
 		}
-		//‰º”»’è.
+		//ä¸‹åˆ¤å®š.
 		else if (targetRect.bottom < nextRect.bottom
 			&& targetRect.bottom > nextRect.top)
 		{
 			return eHitDirection::eDown;
 		}
 	}
-	//¶‰E”»’è.
+	//å·¦å³åˆ¤å®š.
 	if (targetRect.top < rect.bottom
 		&& targetRect.bottom > rect.top)
 	{
-		//¶”»’è.
+		//å·¦åˆ¤å®š.
 		if (targetRect.left < nextRect.right
 			&& targetRect.left > nextRect.left)
 		{
 			return eHitDirection::eLeft;
 		}
-		//‰E”»’è.
+		//å³åˆ¤å®š.
 		else if (targetRect.right < nextRect.right
 			&& targetRect.right > nextRect.left)
 		{

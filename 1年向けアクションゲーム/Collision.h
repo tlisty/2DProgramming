@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include<d3dx9.h>
 #include<utility>
@@ -12,7 +12,7 @@ enum eHitDirection
 	eNone,
 };
 
-//ü•ª\‘¢‘Ì.
+//ç·šåˆ†æ§‹é€ ä½“.
 struct tSegment
 {
 	tSegment( const D3DXVECTOR2 & aPosition , const D3DXVECTOR2 & aVector )
@@ -30,13 +30,13 @@ class Collision
 {
 public:
 	using SegmentsResult = std::pair<bool, D3DXVECTOR2>;
-// ü•ª‚ÌÕ“Ë
+// ç·šåˆ†ã®è¡çª
 	static const SegmentsResult Segments(
-		tSegment &seg1,          // ü•ª1
-		tSegment &seg2           // ü•ª2
+		tSegment &seg1,          // ç·šåˆ†1
+		tSegment &seg2           // ç·šåˆ†2
 	);
 
-	// 2DƒxƒNƒgƒ‹‚ÌŠOÏ
+	// 2Dãƒ™ã‚¯ãƒˆãƒ«ã®å¤–ç©
 	static const float D3DXVec2Cross(const D3DXVECTOR2 & v1, const D3DXVECTOR2 & v2);
 
 	static const eHitDirection Rect(const D3DXVECTOR2 & aPos, const D3DXVECTOR2 & aMoveVector, const D3DXVECTOR3 & aCenterPos

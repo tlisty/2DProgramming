@@ -1,4 +1,4 @@
-#include "GameBase.h"
+ï»¿#include "GameBase.h"
 
 
 
@@ -15,7 +15,7 @@ GameBase::~GameBase()
 {
 }
 
-//‰Šú‰»ŠÖ”i¸”s‚·‚é‚Æ‚«‚Ífalse‚ğ•Ô‚·‚æ‚¤‚É‚·‚éj
+//åˆæœŸåŒ–é–¢æ•°ï¼ˆå¤±æ•—ã™ã‚‹ã¨ãã¯falseã‚’è¿”ã™ã‚ˆã†ã«ã™ã‚‹ï¼‰
 bool GameBase::Init()
 {
 	return true;

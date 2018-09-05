@@ -1,4 +1,4 @@
-// t_maeshinaópGameFrame.
+Ôªø// t_maeshinaÁî®GameFrame.
 
 #include<windows.h>
 #include<d3dx9.h>
@@ -22,11 +22,11 @@ public:
 	bool Initialize(HINSTANCE aHInst,const int aCmdShow);
 	void GameLoop();
 	void Release();
-	//TODO:Ç‰Ç≠Ç‰Ç≠ÇÕÉÅÉìÉoä÷êîÇ…Ç∑ÇÈ.
+	//TODO:„ÇÜ„Åè„ÇÜ„Åè„ÅØ„É°„É≥„ÉêÈñ¢Êï∞„Å´„Åô„Çã.
 	//LRESULT _stdcall WndFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 private:
 
-	//ä÷êî=================================================.
+	//Èñ¢Êï∞=================================================.
 	//LRESULT _stdcall WndFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void Update();
 	void LateUpdate();
@@ -38,14 +38,14 @@ private:
 	WNDCLASS CreateWNDCLASS(HINSTANCE aHInst);
 	bool CreateDirectX9();
 
-	//íËêî=================================================.
+	//ÂÆöÊï∞=================================================.
 	const int			mScrollWidth;
 	const int			mScrollHeight;
 	const std::string	mAppName;
 	const bool			mIsFullScreen;
 	const int			mFvFVertex;
 
-	//ïœêî=================================================.
+	//Â§âÊï∞=================================================.
 	HWND					mpHwnd;
 	LPDIRECT3D9				mpD3D;
 	LPDIRECT3DDEVICE9		mpD3DDevice;
